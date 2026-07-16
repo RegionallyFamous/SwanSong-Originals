@@ -1,0 +1,174 @@
+#!/usr/bin/env python3
+"""Fast host checks for authored puzzle and route invariants."""
+
+from __future__ import annotations
+
+from collections import deque
+from itertools import product
+from pathlib import Path
+import re
+
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def reachable(start, goal, blocked, width, height):
+    queue = deque([start])
+    seen = {start}
+    while queue:
+        point = queue.popleft()
+        if point == goal:
+            return True
+        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            nxt = point[0] + dx, point[1] + dy
+            if (
+                0 <= nxt[0] < width
+                and 0 <= nxt[1] < height
+                and nxt not in seen
+                and not blocked(*nxt)
+            ):
+                seen.add(nxt)
+                queue.append(nxt)
+    return False
+
+
+def test_cartridge_headers():
+    ids = set()
+    configs = sorted((ROOT / "games").glob("*/wfconfig.toml"))
+    assert len(configs) == 10
+    for config_path in configs:
+        text = config_path.read_text()
+        game_id_match = re.search(r"^game_id = (\d+)$", text, re.MULTILINE)
+        assert game_id_match, f"missing game_id in {config_path}"
+        game_id = int(game_id_match.group(1))
+        assert re.search(r"^color = true$", text, re.MULTILINE)
+        assert re.search(r'^save_type = "NONE"$', text, re.MULTILINE)
+        assert game_id not in ids
+        ids.add(game_id)
+    assert ids == set(range(1, 11))
+
+
+def test_help_lines_fit():
+    pattern = re.compile(r'static const char __far help\[\] = "([^"]*)";')
+    title_pattern = re.compile(r'static const char __far title\[\] = "([^"]*)";')
+    for source in sorted((ROOT / "games").glob("*/src/main.c")):
+        text = source.read_text()
+        match = pattern.search(text)
+        assert match, f"missing help line in {source}"
+        assert len(match.group(1)) <= 28, f"help line wraps in {source}"
+        title_match = title_pattern.search(text)
+        assert title_match, f"missing title line in {source}"
+        assert len(title_match.group(1)) <= 26, f"styled title wraps in {source}"
+
+
+def test_dynamic_ui_lines_fit():
+    worst_case_lines = {
+        "mote tempo": "TEMPO 20 SCOPE 2 (B)",
+        "courier outbound": "F40 S40 TAKE P TO D",
+        "kaiju status": "SUN 24 DIST 100 DATA 3/3",
+        "turncoat status": "TURNS 18  HP 3  RECRUITS 4",
+    }
+    for label, line in worst_case_lines.items():
+        assert len(line) <= 28, f"{label} wraps ({len(line)} columns)"
+
+
+def test_radio_ghost_timing():
+    # Held-input repeat every three frames reaches all clues well before dawn.
+    targets = (934, 995, 1042)
+    tuning_steps = sum((abs(target - 880) + 1) // 2 for target in targets)
+    assert tuning_steps * 3 + 3 < 4500
+
+
+def test_courier_route():
+    def blocked(x, y):
+        return (
+            x in (0, 19)
+            or y in (0, 8)
+            or (y == 3 and 3 < x < 15 and x != 9)
+            or (x == 12 and 3 < y < 8 and y != 6)
+        )
+
+    assert reachable((2, 1), (3, 7), blocked, 20, 9)
+    assert reachable((3, 7), (17, 1), blocked, 20, 9)
+
+
+def test_rotate_rooms():
+    def blocked(room, vertical, x, y):
+        if x in (0, 11) or y in (0, 7):
+            return True
+        if not vertical:
+            return x == 3 + room % 5 and y != 1 + room % 6
+        return y == 2 + room % 4 and x != 1 + (room * 2) % 10
+
+    for room in range(5):
+        key = 2 + room, 6 - (room & 1)
+        goal = 10, 1
+        queue = deque([(1, 1, False, False)])
+        seen = set(queue)
+        solved = False
+        while queue:
+            x, y, vertical, has_key = queue.popleft()
+            has_key = has_key or (x, y) == key
+            if has_key and (x, y) == goal:
+                solved = True
+                break
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                nx, ny = x + dx, y + dy
+                state = nx, ny, vertical, has_key
+                if state not in seen and not blocked(room, vertical, nx, ny):
+                    seen.add(state)
+                    queue.append(state)
+            new_vertical = not vertical
+            nx, ny = ((1, 1) if blocked(room, new_vertical, x, y) else (x, y))
+            state = nx, ny, new_vertical, has_key
+            if state not in seen:
+                seen.add(state)
+                queue.append(state)
+        assert solved, f"Rotate Dungeon room {room + 1} is unsolvable"
+
+
+def test_bug_witch_puzzles():
+    inputs = [0, 0, 1, 1, 0]
+    targets = [1, 1, 0, 1, 0]
+    limits = [1, 2, 1, 2, 3]
+    required_masks = [1, 3, 4, 5, 7]
+    for puzzle in range(5):
+        solutions = 0
+        for cells in product(range(4), repeat=5):
+            signal = inputs[puzzle]
+            used = mask = 0
+            for cell in cells:
+                if cell == 1:
+                    signal ^= 1
+                    mask |= 1
+                    used += 1
+                elif cell == 2:
+                    signal = 1
+                    mask |= 2
+                    used += 1
+                elif cell == 3:
+                    signal = 0
+                    mask |= 4
+                    used += 1
+            if (
+                signal == targets[puzzle]
+                and used <= limits[puzzle]
+                and mask & required_masks[puzzle] == required_masks[puzzle]
+            ):
+                solutions += 1
+        assert solutions, f"Bug Witch puzzle {puzzle + 1} is unsolvable"
+
+
+def main():
+    test_cartridge_headers()
+    test_help_lines_fit()
+    test_dynamic_ui_lines_fit()
+    test_radio_ghost_timing()
+    test_courier_route()
+    test_rotate_rooms()
+    test_bug_witch_puzzles()
+    print("OK   cartridge IDs, UI bounds, timing, routes, rooms, and puzzles")
+
+
+if __name__ == "__main__":
+    main()

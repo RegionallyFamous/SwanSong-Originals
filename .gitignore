@@ -1,0 +1,10 @@
+build/
+dist/
+compile_commands.json
+*.ws
+*.wsc
+*.elf
+*.pyc
+__pycache__/
+private-fan-skins/
+.DS_Store
