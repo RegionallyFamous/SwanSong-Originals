@@ -11,8 +11,10 @@ jobs:
     container:
       image: cbrzeszczot/wonderful@sha256:1bd074214c0592a5fca3f26ce0c47d3a809f48e83f68705189fe30c78e75435e
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install verifier runtime
-        run: apk add --no-cache python3
+        run: |
+          apt-get update
+          apt-get install --yes --no-install-recommends python3
       - name: Build and verify all ROMs
         run: make clean test WONDERFUL_TOOLCHAIN=/opt/wonderful
