@@ -7,10 +7,12 @@ utility loop, and a clean replay/reset path.
 
 ![All ten games running with native pixel-zine graphics](docs/qa/boot-frames.png)
 
-Every cartridge now renders its own four-color source-art stamp, accent-ink UI,
-and native map or playfield glyphs. The conversion pipeline, high-resolution
-plates, exact prompts, hashes, and enlarged tile proofs are documented in
-[docs/art/source-plates.md](docs/art/source-plates.md).
+Orbital Courier is the first full-screen gameplay-art rebuild: its scrolling
+playfield, characters, objects, and icon-only HUD all follow one Imagegen art
+master. The other nine cartridges retain their four-color pixel-zine art stamps
+while the same screen-by-screen pass continues. Source images, exact prompts,
+hashes, conversion tools, and native proofs are documented in
+[docs/art/](docs/art/).
 
 ## The ten games
 
@@ -34,8 +36,8 @@ Detailed rules and controls are in [docs/CONCEPTS.md](docs/CONCEPTS.md).
 The v1 software scope is complete and tested as ten short-session games. The
 test suite covers cartridge metadata, UI bounds, authored puzzle/route
 solvability, deterministic success and failure paths, reset behavior, native
-art provenance/tilemap integrity, and rendered emulator startup for all ten
-ROMs.
+art provenance/tilemap integrity, Orbital Courier's full-screen graphical
+renderer, and rendered emulator startup for all ten ROMs.
 
 ```sh
 make clean test

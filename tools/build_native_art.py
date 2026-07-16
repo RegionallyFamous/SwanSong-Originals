@@ -12,12 +12,13 @@ from pathlib import Path
 import hashlib
 import math
 
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE_DIR = ROOT / "docs" / "art" / "source-plates"
 PREVIEW_DIR = ROOT / "docs" / "art" / "native"
+CONTACT_SHEET = ROOT / "docs" / "art" / "native-contact-sheet.png"
 
 CREAM = (0xF5, 0xF0, 0xE6)
 INK = (0x1A, 0x1A, 0x1A)
@@ -39,7 +40,6 @@ class ArtSpec:
 
 SPECS = (
     ArtSpec("mote-sound-terminal", (CREAM, INK, PINK, BLUE), 10, 9, 18, 4),
-    ArtSpec("orbital-courier", (CREAM, INK, YELLOW, PINK), 8, 9, 20, 4),
     ArtSpec("scrapframe-garage", (CREAM, INK, YELLOW, BLUE), 10, 9, 18, 4),
     ArtSpec("radio-ghost", (CREAM, INK, PALE_PINK, PINK), 10, 9, 18, 4),
     ArtSpec("harpoon-moon", (CREAM, INK, YELLOW, PALE_PINK), 7, 9, 21, 4),
@@ -218,6 +218,36 @@ static const uint16_t __far native_art_map[] = {{
     )
 
 
+def build_contact_sheet() -> None:
+    paths = sorted(PREVIEW_DIR.glob("*.png"))
+    cell_width = 475
+    cell_height = 326
+    margin = 18
+    art_width = cell_width - margin * 2
+    art_height = 270
+    canvas = Image.new("RGB", (cell_width * 2, cell_height * 5), CREAM)
+    draw = ImageDraw.Draw(canvas)
+    try:
+        font = ImageFont.truetype("DejaVuSans.ttf", 22)
+    except OSError:
+        font = ImageFont.load_default()
+    for index, path in enumerate(paths):
+        image = Image.open(path).convert("RGB")
+        scale = min(1.0, art_width / image.width, art_height / image.height)
+        if scale < 1.0:
+            image = image.resize(
+                (round(image.width * scale), round(image.height * scale)),
+                Image.Resampling.NEAREST,
+            )
+        cell_x = (index % 2) * cell_width
+        cell_y = (index // 2) * cell_height
+        image_x = cell_x + (cell_width - image.width) // 2
+        image_y = cell_y + margin + (art_height - image.height) // 2
+        canvas.paste(image, (image_x, image_y))
+        draw.text((cell_x + margin, cell_y + 294), path.stem, fill=INK, font=font)
+    canvas.save(CONTACT_SHEET)
+
+
 def main() -> None:
     PREVIEW_DIR.mkdir(parents=True, exist_ok=True)
     for spec in SPECS:
@@ -228,6 +258,7 @@ def main() -> None:
         preview.save(PREVIEW_DIR / f"{spec.slug}.png")
         write_header(spec, image)
         print(f"{spec.slug}: {spec.cols}x{spec.rows} tiles")
+    build_contact_sheet()
 
 
 if __name__ == "__main__":

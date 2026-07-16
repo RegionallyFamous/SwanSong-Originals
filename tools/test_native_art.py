@@ -41,6 +41,47 @@ def array_values(header: str, name: str) -> list[int]:
 def main() -> None:
     provenance = (ROOT / "docs" / "art" / "source-plates.md").read_text()
     for slug in GAMES:
+        if slug == "orbital-courier":
+            master = ROOT / "docs" / "art" / "full-screen" / "orbital-courier-gameplay-master.png"
+            native = ROOT / "docs" / "art" / "full-screen" / "orbital-courier-gameplay-native.png"
+            atlas = ROOT / "docs" / "art" / "full-screen" / "orbital-courier-gameplay-atlas.png"
+            header_path = ROOT / "games" / slug / "src" / "gameplay_art.h"
+            main_path = ROOT / "games" / slug / "src" / "main.c"
+            gfx_path = ROOT / "games" / slug / "src" / "gfx.c"
+            full_screen_provenance = (
+                ROOT / "docs" / "art" / "full-screen" / "orbital-courier-gameplay.md"
+            ).read_text()
+
+            assert master.is_file() and min(png_size(master)) >= 1000
+            assert png_size(native) == (224, 144)
+            assert atlas.is_file()
+            header = header_path.read_text()
+            main_source = main_path.read_text()
+            gfx_source = gfx_path.read_text()
+            source_sha = hashlib.sha256(master.read_bytes()).hexdigest()
+            assert f"Imagegen source SHA-256: {source_sha}" in header
+            assert source_sha in full_screen_provenance
+
+            intro_tiles = array_values(header, "orbital_intro_tiles")
+            intro_map = array_values(header, "orbital_intro_map")
+            game_tiles = array_values(header, "orbital_game_tiles")
+            palette = array_values(header, "orbital_palette")
+            assert len(intro_tiles) % 16 == 0 and 0 < len(intro_tiles) // 16 <= 511
+            assert len(intro_map) == 28 * 18
+            assert max(value & 0x01FF for value in intro_map) <= len(intro_tiles) // 16
+            assert len(game_tiles) % 16 == 0 and 0 < len(game_tiles) // 16 <= 511
+            assert len(palette) == 4 and len(set(palette)) == 4
+
+            assert '#include "gfx.h"' in main_source
+            assert "orbital_gfx_show_intro();" in main_source
+            assert "orbital_gfx_render(" in main_source
+            assert '#include "gameplay_art.h"' in gfx_source
+            assert "#define VIEW_COLS 14" in gfx_source
+            assert "#define VIEW_ROWS 8" in gfx_source
+            for terminal_call in ("printf(", "putchar(", "rf_header(", "rf_footer("):
+                assert terminal_call not in main_source
+            continue
+
         source = ROOT / "docs" / "art" / "source-plates" / f"{slug}.png"
         preview = ROOT / "docs" / "art" / "native" / f"{slug}.png"
         header_path = ROOT / "games" / slug / "src" / "native_art.h"
@@ -75,7 +116,7 @@ def main() -> None:
     )
     for obsolete in ("[o_o]", "[?_?]", "[x_x]", ".--/\\--."):
         assert obsolete not in combined, f"obsolete ASCII stand-in remains: {obsolete}"
-    print("OK   ten approved source plates, native tilemaps, palettes, and ROM hooks")
+    print("OK   Orbital full-screen gameplay art plus nine native art stamps")
 
 
 if __name__ == "__main__":

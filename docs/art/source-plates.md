@@ -5,17 +5,18 @@ image-generation tool. The anthology concept sheet was supplied as a **style
 reference only**. No franchise art, screenshots, logos, or third-party assets
 were supplied or used.
 
-The high-resolution plates are retained in `docs/art/source-plates/`. The
-cartridges do not display those files directly: `tools/build_native_art.py`
-isolates each focal composition, reduces it to one exact four-color palette,
-fits it to an 8-by-8 tile grid, deduplicates flipped tiles, and emits the
-checked-in `native_art.h` used by that game. Enlarged nearest-neighbor proofs
-are retained in `docs/art/native/`.
+The high-resolution plates are retained in `docs/art/source-plates/`.
+`tools/build_native_art.py` converts nine of them into the checked-in art stamps
+used by those games. Orbital Courier's first plate is retained as historical
+direction, but its cartridge now uses the complete full-screen master and
+renderer documented in
+[`full-screen/orbital-courier-gameplay.md`](full-screen/orbital-courier-gameplay.md).
+Enlarged nearest-neighbor proofs are retained in `docs/art/native/`.
 
 | Game | Source dimensions | SHA-256 | Critique |
 | --- | --- | --- | --- |
 | Mote Sound Terminal | 1562 x 1007 | `b2e228a2b54255bd474a72cda1a468c2564d18dce2a448098d3a3bd7e6dbb190` | pass |
-| Orbital Courier | 1563 x 1006 | `97e5147227055eddd3d30fab54b2bcf9eb2a89144169514495ceca034a0ffb0e` | pass |
+| Orbital Courier (superseded plate) | 1563 x 1006 | `97e5147227055eddd3d30fab54b2bcf9eb2a89144169514495ceca034a0ffb0e` | pass; replaced in ROM by full-screen master |
 | Scrapframe Garage | 1563 x 1006 | `5829d3bdd6990d7955abd4b615d355de89344c9a9a3b3c5c94eae2f7be7a426b` | pass after targeted reroll |
 | Radio Ghost | 1563 x 1006 | `2715ab15b669860f69ad314412d4185ab39f4d7e30b6a00e2a8dc5c21d4f4db1` | pass |
 | Harpoon Moon | 1563 x 1006 | `21836a178bb10fa2fde8debd7e8fc840c5661fa3ce694bb4616a8665703b4c4d` | pass |

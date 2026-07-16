@@ -53,6 +53,10 @@ def test_help_lines_fit():
     title_pattern = re.compile(r'static const char __far title\[\] = "([^"]*)";')
     for source in sorted((ROOT / "games").glob("*/src/main.c")):
         text = source.read_text()
+        if source.parents[1].name == "orbital-courier":
+            assert "orbital_gfx_render(" in text
+            assert "printf(" not in text
+            continue
         match = pattern.search(text)
         assert match, f"missing help line in {source}"
         assert len(match.group(1)) <= 28, f"help line wraps in {source}"
@@ -64,7 +68,6 @@ def test_help_lines_fit():
 def test_dynamic_ui_lines_fit():
     worst_case_lines = {
         "mote tempo": "TEMPO 20 SCOPE 2 (B)",
-        "courier outbound": "F40 S40 TAKE P TO D",
         "kaiju status": "SUN 24 DIST 100 DATA 3/3",
         "turncoat status": "TURNS 18  HP 3  RECRUITS 4",
     }
