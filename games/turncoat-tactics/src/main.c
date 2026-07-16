@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "rf_swan.h"
+#include "native_art.h"
 
 typedef struct {
 	int8_t x;
@@ -107,6 +108,7 @@ static void render(uint8_t cursor_x, uint8_t cursor_y, uint8_t selected,
 	rf_clear();
 	rf_header(title, subtitle);
 	printf(fmt_status, turns, allies[0].hp, recruits);
+	rf_playfield_begin();
 	for (y = 0; y < 6; ++y) {
 		for (x = 0; x < 8; ++x) {
 			int8_t ai = ally_at((int8_t)x, (int8_t)y);
@@ -120,7 +122,9 @@ static void render(uint8_t cursor_x, uint8_t cursor_y, uint8_t selected,
 		}
 		putchar('\n');
 	}
-	printf("S selected  E enemy  B goal\n");
+	rf_playfield_end();
+	printf("A ally  E rival\n");
+	printf("S pick  B goal\n");
 	if (result == 1) printf("BEACON SECURED. A restart\n");
 	else if (result == 2) printf("COMMAND LOST. A restart\n");
 	else printf("Recruit enemies at 1 HP.\n");
@@ -138,6 +142,7 @@ void main(void) {
 
 	reset_units();
 	rf_init(false);
+	RF_LOAD_NATIVE_ART();
 	while (1) {
 		const rf_input_t *input;
 		bool acted = false;

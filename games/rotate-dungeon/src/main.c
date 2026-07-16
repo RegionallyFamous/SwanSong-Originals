@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "rf_swan.h"
+#include "native_art.h"
 
 static const char __far title[] = "ROTATE DUNGEON";
 static const char __far subtitle[] = "The room changes when turned";
@@ -34,19 +35,21 @@ static void render(uint8_t room, bool vertical, uint8_t px, uint8_t py,
 	rf_clear();
 	rf_header(title, subtitle);
 	printf(fmt_status, room + 1, key ? yes_text : no_text, vertical ? vert_text : horiz_text);
+	rf_playfield_begin();
 	for (y = 0; y < 8; ++y) {
 		for (x = 0; x < 12; ++x) {
 			char c = blocked(room, vertical, x, y) ? '#' : '.';
 			if (!key && x == key_x(room) && y == key_y(room)) c = 'K';
-			if (x == 10 && y == 1) c = 'E';
+			if (x == 10 && y == 1) c = 'G';
 			if (x == px && y == py) c = '@';
 			putchar(c);
 		}
 		putchar('\n');
 	}
+	rf_playfield_end();
 	printf("Rotate changes solid walls.\n");
 	if (result) printf("FLOOR CLEARED! A restart\n");
-	else printf("Find K, then reach E.\n");
+	else printf("Find K, then reach G.\n");
 	rf_footer(help);
 }
 
@@ -60,6 +63,7 @@ void main(void) {
 	bool dirty = true;
 
 	rf_init(false);
+	RF_LOAD_NATIVE_ART();
 	while (1) {
 		const rf_input_t *input;
 		rf_frame();

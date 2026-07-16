@@ -15,11 +15,56 @@ static uint16_t random_state = 0x71D3;
 static uint8_t tone_frames;
 static uint8_t text_x;
 static uint8_t text_y;
+static bool color_active;
+static bool playfield_mode;
+static const uint16_t __far *active_art_map;
+static uint8_t active_art_width;
+static uint8_t active_art_height;
+static uint8_t active_art_x;
+static uint8_t active_art_y;
 static ws_sound_wavetable_t sound_waves __attribute__((aligned(64)));
 
 static const char __far rule[] = "==//====================//==";
 
+#define RF_ICON_BASE 392
+
+static const ws_display_tile_t __far icon_tiles[] = {
+	/* wall: broken photocopy ink */
+	{ .row = {0x00FF, 0x00DB, 0x00FF, 0x00BD, 0x00FF, 0x00E7, 0x00FF, 0x00BD} },
+	/* floor: offset blue/pink registration dots */
+	{ .row = {0x0000, 0x0400, 0x0000, 0x2000, 0x0000, 0x0200, 0x0000, 0x1000} },
+	/* player: accent-2 diamond */
+	{ .row = {0x0000, 0x1818, 0x3C3C, 0x7E7E, 0xFFFF, 0x7E7E, 0x3C3C, 0x1818} },
+	/* item: accent-1 taped parcel */
+	{ .row = {0x0000, 0x7E00, 0x4200, 0x5A00, 0x5A00, 0x4200, 0x7E00, 0x0000} },
+	/* goal: two-ink ring */
+	{ .row = {0x1818, 0x3C24, 0x6642, 0xC381, 0xC381, 0x6642, 0x3C24, 0x1818} },
+	/* selected: editorial corner brackets */
+	{ .row = {0xE7E7, 0x8181, 0x0000, 0x0000, 0x0000, 0x0000, 0x8181, 0xE7E7} },
+	/* ally: accent-1 chevron */
+	{ .row = {0x1800, 0x3C00, 0x7E00, 0xDB00, 0x1800, 0x3C00, 0x6600, 0xC300} },
+	/* enemy: black cut-paper wedge */
+	{ .row = {0x0018, 0x003C, 0x007E, 0x00FF, 0x00FF, 0x007E, 0x003C, 0x0018} }
+};
+
+static uint16_t icon_attr(uint8_t c) {
+	uint16_t tile = 0;
+	switch (c) {
+		case '#': tile = RF_ICON_BASE; break;
+		case '.': case '~': case '_': tile = RF_ICON_BASE + 1; break;
+		case '@': case 'C': case 'S': tile = RF_ICON_BASE + 2; break;
+		case 'P': case 'K': case '*': case 'M': tile = RF_ICON_BASE + 3; break;
+		case 'D': case 'G': case 'B': tile = RF_ICON_BASE + 4; break;
+		case '+': case '^': tile = RF_ICON_BASE + 5; break;
+		case 'A': tile = RF_ICON_BASE + 6; break;
+		case 'E': tile = RF_ICON_BASE + 7; break;
+		default: return 0;
+	}
+	return WS_SCREEN_ATTR_TILE(tile) | WS_SCREEN_ATTR_PALETTE(1);
+}
+
 static int fixed_console_put(uint8_t c, FILE *stream) {
+	uint16_t attr;
 	(void)stream;
 	if (c == '\r') {
 		text_x = 0;
@@ -40,8 +85,15 @@ static int fixed_console_put(uint8_t c, FILE *stream) {
 	}
 	if (text_y >= 18) return c;
 	if (c < 0x20 || c >= 0x80) c = '?';
-	wse_screen1.row[text_y].cell[text_x] =
-		WS_SCREEN_ATTR_TILE(0x1A0 + c - 0x20);
+	attr = playfield_mode ? icon_attr(c) : 0;
+	if (!attr) {
+		uint8_t palette = 0;
+		if (text_y == 0) palette = 2;
+		else if (c == '=' || c == '/') palette = 3;
+		attr = WS_SCREEN_ATTR_TILE(0x1A0 + c - 0x20) |
+			WS_SCREEN_ATTR_PALETTE(palette);
+	}
+	wse_screen1.row[text_y].cell[text_x] = attr;
 	++text_x;
 	return c;
 }
@@ -77,8 +129,19 @@ static void init_sound(void) {
 
 void rf_init(bool vertical) {
 	memset(&input_state, 0, sizeof(input_state));
+	color_active = ws_system_set_mode(WS_MODE_COLOR);
 	wsx_console_init_default(&wse_screen1);
+	ws_display_set_screen_addresses(&wse_screen1, &wse_screen2);
 	stdout = &fixed_console_file;
+	memset(WS_TILE_MEM(0), 0, sizeof(ws_display_tile_t));
+	memcpy(WS_TILE_MEM(RF_ICON_BASE), icon_tiles, sizeof(icon_tiles));
+	if (color_active) {
+		uint16_t ws_iram *ui = WS_SCREEN_COLOR_MEM(0);
+		ui[0] = WS_RGB(15, 15, 14);
+		ui[1] = WS_RGB(1, 1, 1);
+		ui[2] = WS_RGB(1, 1, 1);
+		ui[3] = WS_RGB(1, 1, 1);
+	}
 	ws_display_set_control(WS_DISPLAY_CTRL_SCR1_ENABLE);
 	rf_set_orientation(vertical);
 	ws_int_set_default_handler_vblank();
@@ -112,9 +175,49 @@ void rf_frame(void) {
 void rf_clear(void) {
 	text_x = 0;
 	text_y = 0;
+	playfield_mode = false;
 	ws_screen_fill_tiles(&wse_screen1, WS_SCREEN_ATTR_TILE(0x1A0), 0, 0, 32, 32);
+	if (active_art_map) {
+		ws_screen_put_tiles(&wse_screen1, active_art_map, active_art_x, active_art_y,
+			active_art_width, active_art_height);
+	}
 	ws_display_scroll_screen1_to(0, 0);
 	ws_display_set_control(WS_DISPLAY_CTRL_SCR1_ENABLE);
+}
+
+void rf_art_load(const uint8_t __far *tiles, uint16_t tile_bytes,
+	const uint16_t __far *tilemap, uint8_t width, uint8_t height,
+	uint8_t screen_x, uint8_t screen_y, const uint16_t __far *palette) {
+	memcpy(WS_TILE_MEM(1), tiles, tile_bytes);
+	active_art_map = tilemap;
+	active_art_width = width;
+	active_art_height = height;
+	active_art_x = screen_x;
+	active_art_y = screen_y;
+	if (color_active) {
+		uint8_t i;
+		uint16_t ws_iram *art = WS_SCREEN_COLOR_MEM(1);
+		uint16_t ws_iram *accent_1 = WS_SCREEN_COLOR_MEM(2);
+		uint16_t ws_iram *accent_2 = WS_SCREEN_COLOR_MEM(3);
+		for (i = 0; i < 4; ++i) art[i] = palette[i];
+		accent_1[0] = palette[0];
+		accent_2[0] = palette[0];
+		for (i = 1; i < 4; ++i) {
+			accent_1[i] = palette[2];
+			accent_2[i] = palette[3];
+		}
+	} else {
+		outportw(WS_SCR_PAL_1_PORT, WS_DISPLAY_MONO_PALETTE(0, 7, 4, 2));
+	}
+	ws_display_set_control(WS_DISPLAY_CTRL_SCR1_ENABLE);
+}
+
+void rf_playfield_begin(void) {
+	playfield_mode = true;
+}
+
+void rf_playfield_end(void) {
+	playfield_mode = false;
 }
 
 void rf_header(const char __far *title, const char __far *subtitle) {

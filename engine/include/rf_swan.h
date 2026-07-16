@@ -18,6 +18,11 @@ void rf_frame(void);
 void rf_clear(void);
 void rf_header(const char __far *title, const char __far *subtitle);
 void rf_footer(const char __far *help);
+void rf_art_load(const uint8_t __far *tiles, uint16_t tile_bytes,
+	const uint16_t __far *tilemap, uint8_t width, uint8_t height,
+	uint8_t screen_x, uint8_t screen_y, const uint16_t __far *palette);
+void rf_playfield_begin(void);
+void rf_playfield_end(void);
 
 const rf_input_t *rf_input(void);
 int8_t rf_dx(uint16_t keys);

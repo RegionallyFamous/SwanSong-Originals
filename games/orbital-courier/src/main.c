@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "rf_swan.h"
+#include "native_art.h"
 
 static const char __far title[] = "ORBITAL COURIER";
 static const char __far subtitle[] = "Parcel 7: ring habitat";
@@ -27,6 +28,7 @@ static void render(uint8_t px, uint8_t py, bool parcel, uint8_t fuel,
 	rf_clear();
 	rf_header(title, subtitle);
 	printf(fmt_status, fuel, steps, parcel ? delivering : outbound);
+	rf_playfield_begin();
 	for (y = 0; y < 9; ++y) {
 		for (x = 0; x < 20; ++x) {
 			char c = blocked(x, y) ? '#' : '.';
@@ -37,6 +39,7 @@ static void render(uint8_t px, uint8_t py, bool parcel, uint8_t fuel,
 		}
 		putchar('\n');
 	}
+	rf_playfield_end();
 	if (result == 1) printf(won);
 	else if (result == 2) printf(lost);
 	else printf("Pick up, route, deliver.\n");
@@ -54,6 +57,7 @@ void main(void) {
 	bool dirty = true;
 
 	rf_init(false);
+	RF_LOAD_NATIVE_ART();
 	while (1) {
 		const rf_input_t *input;
 		int8_t dx;

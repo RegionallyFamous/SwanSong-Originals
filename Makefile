@@ -32,6 +32,7 @@ verify: dist
 test: verify
 	python3 tools/test_game_invariants.py
 	python3 tools/test_gameplay_paths.py
+	python3 tools/test_native_art.py
 
 smoke: test
 	tools/smoke_mednafen.sh dist/*.wsc

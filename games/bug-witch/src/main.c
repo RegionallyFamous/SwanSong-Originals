@@ -4,12 +4,13 @@
 #include <string.h>
 
 #include "rf_swan.h"
+#include "native_art.h"
 
 static const char __far title[] = "BUG WITCH";
 static const char __far subtitle[] = "Send the signal through";
 static const char __far help[] = "LR move UD type A/B edit";
 static const char __far fmt_status[] = "PUZZLE %u/5  IN %u  GOAL %u\n";
-static const char __far fmt_type[] = "FAMILIAR: %s  LIMIT %u\n";
+static const char __far fmt_type[] = "FAMILIAR %s\nLIMIT %u\n";
 static const char __far flip_text[] = "FLIP";
 static const char __far set_text[] = "SET-1";
 static const char __far clear_text[] = "CLEAR";
@@ -60,14 +61,13 @@ static void render(const uint8_t *cells, uint8_t cursor, uint8_t selected,
 	}
 	printf(fmt_status, puzzle + 1, puzzle_input[puzzle], puzzle_target[puzzle]);
 	printf(fmt_type, type_name(selected), puzzle_limit[puzzle]);
-	printf("\nIN -> ");
+	printf("IN:");
 	for (i = 0; i < 5; ++i) printf("[%c]", cell_char(cells[i]));
-	printf(" -> OUT\n      ");
-	for (i = 0; i < 5; ++i) printf(i == cursor ? " ^ " : "   ");
-	printf("\n\nF=flip  1=set  0=clear\n");
-	printf("START runs the circuit.\n");
-	if (failed) printf("Signal rejected. Revise it.\n");
-	else printf("Required familiar mix: %u\n", puzzle_mask[puzzle]);
+	printf("\nPICK SLOT %u\n\n", cursor + 1);
+	printf("F flip 1 set 0 clr\n");
+	printf("START run circuit\n");
+	if (failed) printf("Signal rejected\n");
+	else printf("Need familiar mix %u\n", puzzle_mask[puzzle]);
 	rf_footer(help);
 }
 
@@ -81,6 +81,7 @@ void main(void) {
 	bool dirty = true;
 
 	rf_init(false);
+	RF_LOAD_NATIVE_ART();
 	while (1) {
 		const rf_input_t *input;
 		rf_frame();

@@ -3,15 +3,16 @@
 #include <stdio.h>
 
 #include "rf_swan.h"
+#include "native_art.h"
 
 static const char __far title[] = "RADIO GHOST";
 static const char __far subtitle[] = "Night shift ends at dawn";
 static const char __far help[] = "D-pad tune/gain  A lock";
 static const char __far fmt_dial[] = "DIAL %u.%u FM   GAIN %u\n";
-static const char __far fmt_time[] = "DAWN IN %u   CLUES %u/3\n";
-static const char __far fmt_signal[] = "SIGNAL: %s\n\n";
+static const char __far fmt_time[] = "DAWN %u  CLUE %u/3\n";
+static const char __far fmt_signal[] = "SIGNAL\n%s\n\n";
 static const char __far static_text[] = "static";
-static const char __far near_text[] = "voice beneath the noise";
+static const char __far near_text[] = "voice under noise";
 
 #define FRAME_RATE 75
 #define NIGHT_FRAMES 4500
@@ -30,12 +31,12 @@ static void render(uint16_t frequency, uint8_t gain, uint16_t time,
 	rf_header(title, subtitle);
 	printf(fmt_dial, frequency / 10, frequency % 10, gain);
 	printf(fmt_time, time / FRAME_RATE, clue);
-	rf_print_bar((uint8_t)((frequency - 880) / 10), 20, 20);
+	rf_print_bar((uint8_t)((frequency - 880) / 10), 20, 14);
 	putchar('\n');
 	printf(fmt_signal, distance <= (gate ? 8 : 3) ? near_text : static_text);
-	if (clue > 0) printf("CLUE 1: The caller knows me.\n");
-	if (clue > 1) printf("CLUE 2: The clock runs back.\n");
-	if (clue > 2) printf("CLUE 3: Do not say hello.\n");
+	if (clue > 0) printf("1 caller knows me\n");
+	if (clue > 1) printf("2 clock runs back\n");
+	if (clue > 2) printf("3 don't say hello\n");
 	if (result == 1) printf("LINE OPEN. You found them.\nA: another night\n");
 	else if (result == 2) printf("DAWN. The signal is gone.\nA: try again\n");
 	else printf("B toggles wide noise gate.\n");
@@ -52,6 +53,7 @@ void main(void) {
 	bool dirty = true;
 
 	rf_init(false);
+	RF_LOAD_NATIVE_ART();
 	while (1) {
 		const rf_input_t *input;
 		int8_t dx;

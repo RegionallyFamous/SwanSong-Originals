@@ -3,12 +3,13 @@
 #include <stdio.h>
 
 #include "rf_swan.h"
+#include "native_art.h"
 
 static const char __far title[] = "MOTE SOUND TERMINAL";
 static const char __far subtitle[] = "Original hangar synth";
 static const char __far help[] = "LR track UD tempo A play";
 static const char __far fmt_track[] = "TRACK %u  ";
-static const char __far fmt_tempo[] = "TEMPO %u SCOPE %u (B)\n";
+static const char __far fmt_tempo[] = "TEMPO %u\nSCOPE %u (B)\n";
 static const char __far fmt_status[] = "STATUS: %s\n";
 static const char __far fmt_bar[] = "%u ";
 static const char __far playing_text[] = "PLAYING";
@@ -38,14 +39,10 @@ static void render(uint8_t track, bool playing, uint8_t tempo,
 	printf(fmt_track, track + 1);
 	print_track(track);
 	printf(fmt_status, playing ? playing_text : paused_text);
-	printf("       .--/\\--.\n");
-	printf("      /  |[]|  \\\n");
-	printf("      \\  |\\/|  /\n");
-	printf("       '--\\/--'\n");
 	for (row = 0; row < 3; ++row) {
 		uint8_t level = (uint8_t)(((step + row * 3 + scope * 2) % 15) + 1);
 		printf(fmt_bar, row + 1);
-		rf_print_bar(level, 15, 16);
+		rf_print_bar(level, 15, 14);
 		putchar('\n');
 	}
 	printf(fmt_tempo, tempo, scope + 1);
@@ -63,6 +60,7 @@ void main(void) {
 	bool dirty = true;
 
 	rf_init(false);
+	RF_LOAD_NATIVE_ART();
 	while (1) {
 		const rf_input_t *input;
 		int8_t dx;
@@ -106,7 +104,7 @@ void main(void) {
 			rf_tone(note_hz(track, step), 7);
 			dirty = true;
 		}
-		if (dirty || (rf_frame_count() & 7) == 0) {
+		if (dirty) {
 			render(track, playing, tempo, scope, step);
 			dirty = false;
 		}

@@ -3,12 +3,13 @@
 #include <stdio.h>
 
 #include "rf_swan.h"
+#include "native_art.h"
 
 static const char __far title[] = "POCKET KAIJU OBSERVATORY";
 static const char __far subtitle[] = "Observe. Do not disturb.";
 static const char __far help[] = "Move Ashot Bhide Start zoom";
 static const char __far fmt_status[] = "SUN %u DIST %u DATA %u/3\n";
-static const char __far fmt_behavior[] = "BEHAVIOR: %s  ZOOM %ux\n";
+static const char __far fmt_behavior[] = "BEHAVIOR %s\nZOOM %ux\n";
 static const char __far sleep_text[] = "SLEEP";
 static const char __far feed_text[] = "FEED";
 static const char __far migrate_text[] = "MIGRATE";
@@ -33,8 +34,7 @@ static void render(uint8_t camera, uint8_t kaiju, uint8_t behavior,
 	rf_header(title, subtitle);
 	printf(fmt_status, sun / 75, disturbance, bit_count(evidence));
 	printf(fmt_behavior, behavior_name(behavior), zoom ? 2 : 1);
-	printf("       .--^^--.\n");
-	printf("______/ reserve \\______\n");
+	rf_playfield_begin();
 	for (x = 0; x < 21; ++x) {
 		char c = '.';
 		if (x == kaiju) c = 'K';
@@ -42,8 +42,9 @@ static void render(uint8_t camera, uint8_t kaiju, uint8_t behavior,
 		putchar(c);
 	}
 	putchar('\n');
-	printf("Photo every behavior at\n");
-	printf("the right distance.\n\n");
+	rf_playfield_end();
+	printf("Frame each behavior\n");
+	printf("at safe distance.\n\n");
 	if (result == 1) printf("DOSSIER COMPLETE! A again\n");
 	else if (result == 2) printf("EXPEDITION ENDED. A retry\n");
 	else printf("B lowers disturbance.\n");
@@ -62,6 +63,7 @@ void main(void) {
 	bool dirty = true;
 
 	rf_init(false);
+	RF_LOAD_NATIVE_ART();
 	while (1) {
 		const rf_input_t *input;
 		rf_frame();

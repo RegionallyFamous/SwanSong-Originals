@@ -3,12 +3,12 @@
 #include <stdio.h>
 
 #include "rf_swan.h"
+#include "native_art.h"
 
 static const char __far title[] = "ONE LAST LAP";
 static const char __far subtitle[] = "Old couriers never quit";
 static const char __far help[] = "A gas B brake D-pad lane";
 static const char __far fmt_status[] = "LAP %u/3 SPD %u BAT %u\n";
-static const char __far fmt_rivals[] = "RIVALS %u  %u  %u\n";
 
 static void render(uint8_t lap, uint8_t progress, uint8_t speed,
 	uint8_t battery, uint8_t lane, bool helped, uint8_t result) {
@@ -17,14 +17,17 @@ static void render(uint8_t lap, uint8_t progress, uint8_t speed,
 	rf_header(title, subtitle);
 	printf(fmt_status, lap, speed, battery);
 	printf("TRACK ");
-	rf_print_bar(progress, 100, 18);
+	rf_print_bar(progress, 100, 10);
 	putchar('\n');
-	printf(fmt_rivals, (progress + 13) % 100, (progress + 31) % 100, (progress + 57) % 100);
+	printf("RIV %u/%u/%u\n", (progress + 13) % 100, (progress + 31) % 100,
+		(progress + 57) % 100);
 	printf("\n");
+	rf_playfield_begin();
 	for (row = 0; row < 3; ++row) {
 		printf(row == lane ? "|======[@]======|\n" : "|======[.]======|\n");
 	}
-	printf("\nRIVAL: %s\n", helped ? "TOWED" : "WAITING AT 48");
+	rf_playfield_end();
+	printf("\nRIVAL %s\n", helped ? "TOWED" : "WAIT @48");
 	if (result == 1 && helped) printf("YOU FINISHED TOGETHER.\nA: race again\n");
 	else if (result == 1) printf("YOU WON, BUT DROVE ALONE.\nA: race again\n");
 	else if (result == 2) printf("BATTERY COLD. A: retry\n");
@@ -44,6 +47,7 @@ void main(void) {
 	bool dirty = true;
 
 	rf_init(false);
+	RF_LOAD_NATIVE_ART();
 	while (1) {
 		const rf_input_t *input;
 		rf_frame();

@@ -3,12 +3,13 @@
 #include <stdio.h>
 
 #include "rf_swan.h"
+#include "native_art.h"
 
 static const char __far title[] = "SCRAPFRAME GARAGE";
 static const char __far subtitle[] = "One shift. Three repairs.";
 static const char __far help[] = "Left/right part  A install";
 static const char __far fmt_job[] = "JOB %u/3   CREDITS %u\n\n";
-static const char __far fmt_select[] = "SELECTED: %s\n\n";
+static const char __far fmt_select[] = "PART: %s\n\n";
 static const char __far fmt_score[] = "SHIFT COMPLETE\n\n%u/3 repairs passed.\n";
 static const char __far part_joint[] = "SERVO JOINT";
 static const char __far part_memory[] = "MEMORY TILE";
@@ -18,14 +19,11 @@ static const char __far failed[] = "SIDE EFFECT! A: next job";
 
 static void print_robot(uint8_t job) {
 	if (job == 0) {
-		printf("Customer: MOP-4\nSymptom: left wheel wobbles\n");
-		printf("   [o_o]\n   /|_|\\__\n");
+		printf("CASE MOP-4\nWHEEL WOBBLE\nCHECK DRIVE SIDE\n");
 	} else if (job == 1) {
-		printf("Customer: LUX-9\nSymptom: forgets every task\n");
-		printf("   [?_?]\n   /|#|\\\n");
+		printf("CASE LUX-9\nMEMORY RESETS\nCHECK STORAGE\n");
 	} else {
-		printf("Customer: KET-2\nSymptom: casing overheats\n");
-		printf("   [x_x] ~~\n   /|_|\\\n");
+		printf("CASE KET-2\nCASING TOO HOT\nCHECK AIRFLOW\n");
 	}
 }
 
@@ -48,7 +46,7 @@ static void render(uint8_t job, uint8_t selected, uint8_t score,
 	printf(fmt_job, job + 1, score * 12);
 	print_robot(job);
 	putchar('\n');
-	printf("PARTS: joint memory cooler\n");
+	printf("PARTS JNT MEM FAN\n");
 	printf(fmt_select, part_name(selected));
 	if (phase == 1) printf(last_ok ? passed : failed);
 	else printf("Match symptom to the part.\n");
@@ -66,6 +64,7 @@ void main(void) {
 	bool dirty = true;
 
 	rf_init(false);
+	RF_LOAD_NATIVE_ART();
 	while (1) {
 		const rf_input_t *input;
 		int8_t dx;

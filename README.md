@@ -5,7 +5,12 @@ builds as its own `.wsc` cartridge and is complete within a deliberately compact
 microgame scope: controls, gameplay state, feedback, an ending or continuous
 utility loop, and a clean replay/reset path.
 
-![Concept sheet for the ten games](docs/art/anthology-concept-sheet.png)
+![All ten games running with native pixel-zine graphics](docs/qa/boot-frames.png)
+
+Every cartridge now renders its own four-color source-art stamp, accent-ink UI,
+and native map or playfield glyphs. The conversion pipeline, high-resolution
+plates, exact prompts, hashes, and enlarged tile proofs are documented in
+[docs/art/source-plates.md](docs/art/source-plates.md).
 
 ## The ten games
 
@@ -28,8 +33,9 @@ Detailed rules and controls are in [docs/CONCEPTS.md](docs/CONCEPTS.md).
 
 The v1 software scope is complete and tested as ten short-session games. The
 test suite covers cartridge metadata, UI bounds, authored puzzle/route
-solvability, deterministic success and failure paths, reset behavior, and
-rendered emulator startup for all ten ROMs.
+solvability, deterministic success and failure paths, reset behavior, native
+art provenance/tilemap integrity, and rendered emulator startup for all ten
+ROMs.
 
 ```sh
 make clean test
@@ -37,9 +43,10 @@ make smoke
 ```
 
 `make test` builds and structurally verifies every ROM, then runs the host-side
-invariant and gameplay-path suites. `make smoke` additionally launches every ROM
-in Mednafen and requires a nonblank rendered frame. The retained evidence and
-remaining hardware limits are recorded in [docs/STATUS.md](docs/STATUS.md).
+invariant, gameplay-path, and native-art suites. `make smoke` additionally
+launches every ROM in Mednafen and requires a nonblank rendered frame. The
+retained evidence and remaining hardware limits are recorded in
+[docs/STATUS.md](docs/STATUS.md).
 
 ## Build requirements
 
@@ -60,7 +67,7 @@ Locally and continuously validated package revisions are recorded in
 
 ## Repository map
 
-- `engine/` — shared input, fixed console UI, VBlank, PRNG, meters,
+- `engine/` — shared input, native color/tile UI, VBlank, PRNG, meters,
   orientation state, and wavetable feedback audio;
 - `games/` — ten independent cartridge projects;
 - `mk/` — common Wonderful build rules;
@@ -75,5 +82,6 @@ The game names, characters, settings, code, music sequences, symbols, and
 concept artwork are original to this project. Platform names are used only to
 describe compatibility. See [docs/ORIGINALITY.md](docs/ORIGINALITY.md).
 
-Code is MIT-licensed. Generated concept art is retained as project source
-material and is not covered by the software license unless stated separately.
+Code is MIT-licensed. Generated source art is retained transparently as project
+source material and is not covered by the software license unless stated
+separately.

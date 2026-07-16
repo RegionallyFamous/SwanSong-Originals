@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "rf_swan.h"
+#include "native_art.h"
 
 static const char __far title[] = "HARPOON MOON";
 static const char __far subtitle[] = "Tag the constellation herd";
@@ -16,7 +17,8 @@ static void render(uint8_t skiff, uint8_t creature, uint16_t oxygen,
 	rf_clear();
 	rf_header(title, subtitle);
 	printf(fmt_status, oxygen / 75, tags, boss_hp);
-	printf("  .     *       .      *\n");
+	rf_playfield_begin();
+	printf(".  *   .  *   .  *\n");
 	printf("_____________________\n");
 	for (x = 0; x < 21; ++x) {
 		char c = '~';
@@ -26,8 +28,9 @@ static void render(uint8_t skiff, uint8_t creature, uint16_t oxygen,
 	}
 	putchar('\n');
 	printf("_____________________\n\n");
+	rf_playfield_end();
 	printf(fmt_charge);
-	rf_print_bar(charge, 20, 14);
+	rf_print_bar(charge, 20, 10);
 	putchar('\n');
 	if (result == 1) printf("FIELD TAG COMPLETE! A again\n");
 	else if (result == 2) printf("OXYGEN EMPTY. A to retry\n");
@@ -47,6 +50,7 @@ void main(void) {
 	bool dirty = true;
 
 	rf_init(false);
+	RF_LOAD_NATIVE_ART();
 	while (1) {
 		const rf_input_t *input;
 		int8_t dx;

@@ -9,11 +9,12 @@ release gate.
 | ROM structure | Exactly ten named ROMs; supported bank sizes, valid entry/header fields, unique IDs, and valid checksums |
 | Game invariants | UI bounds, courier routes, radio timing, dungeon rooms, and all circuit puzzles are verified |
 | Gameplay paths | All ten games have deterministic utility, success, failure/retry, completion, or reset-path coverage as applicable |
-| Emulator boot | Every ROM reaches a captured nonblank Mednafen frame |
+| Native art | Ten approved source plates are hash-linked to checked-in 2BPP tiles, exact four-color palettes, bounded tilemaps, and ROM load hooks |
+| Emulator boot | Every ROM reaches a captured nonblank Mednafen frame with its game-specific pixel-zine art visible |
 | Audio | Original wavetable sequences and feedback calls compile; physical listening remains device-dependent QA |
 | Saves | Intentionally absent: every v1 game is a short replayable session |
 | Orientation | Logical state and LCD icon path are implemented for Rotate Dungeon |
-| Public assets | Public concept sheet and prompt record contain only original subjects and terminology |
+| Public assets | Concept sheet, ten final source plates, prompts, hashes, critique result, native proofs, and cartridge captures are retained publicly |
 | Hardware | Emulator-verified; physical cartridge, display, and speaker checks remain pending |
 
 The retained emulator contact sheet and its evidence limits are documented in

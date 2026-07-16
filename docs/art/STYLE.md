@@ -15,8 +15,9 @@ handheld-game context without copying its logo, portrait, content, or layout.
   space. Panels may be crooked or asymmetrical but never arbitrary.
 - **Marks:** arrows, circles, underlines, and bold abstract blocks act like an
   editor's physical annotations.
-- **ROM UI:** a star-prefixed title and cut-tape `==//...//==` rule carry the
-  same editorial voice into the monochrome text games.
+- **ROM UI:** a star-prefixed accent-ink title, cut-tape `==//...//==` rule,
+  per-game four-color art stamp, and custom map glyphs carry the editorial
+  voice into every cartridge at native resolution.
 
 ## Anti-generator gate
 
