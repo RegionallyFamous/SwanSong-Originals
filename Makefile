@@ -10,9 +10,12 @@ GAMES := \
 	one-last-lap \
 	bug-witch
 
-.PHONY: all clean dist engine verify test smoke $(GAMES)
+.PHONY: all art clean dist engine verify test smoke $(GAMES)
 
 all: engine $(GAMES)
+
+art:
+	python3 tools/build_fullscreen_art.py
 
 engine:
 	$(MAKE) -C engine

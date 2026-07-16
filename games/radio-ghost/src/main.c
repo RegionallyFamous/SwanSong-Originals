@@ -1,18 +1,8 @@
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
 
 #include "rf_swan.h"
-#include "native_art.h"
-
-static const char __far title[] = "RADIO GHOST";
-static const char __far subtitle[] = "Night shift ends at dawn";
-static const char __far help[] = "D-pad tune/gain  A lock";
-static const char __far fmt_dial[] = "DIAL %u.%u FM   GAIN %u\n";
-static const char __far fmt_time[] = "DAWN %u  CLUE %u/3\n";
-static const char __far fmt_signal[] = "SIGNAL\n%s\n\n";
-static const char __far static_text[] = "static";
-static const char __far near_text[] = "voice under noise";
+#include "gfx.h"
 
 #define FRAME_RATE 75
 #define NIGHT_FRAMES 4500
@@ -23,26 +13,6 @@ static uint16_t target_for(uint8_t clue) {
 	return 1042;
 }
 
-static void render(uint16_t frequency, uint8_t gain, uint16_t time,
-	uint8_t clue, uint8_t result, bool gate) {
-	uint16_t target = target_for(clue < 3 ? clue : 2);
-	uint16_t distance = frequency > target ? frequency - target : target - frequency;
-	rf_clear();
-	rf_header(title, subtitle);
-	printf(fmt_dial, frequency / 10, frequency % 10, gain);
-	printf(fmt_time, time / FRAME_RATE, clue);
-	rf_print_bar((uint8_t)((frequency - 880) / 10), 20, 14);
-	putchar('\n');
-	printf(fmt_signal, distance <= (gate ? 8 : 3) ? near_text : static_text);
-	if (clue > 0) printf("1 caller knows me\n");
-	if (clue > 1) printf("2 clock runs back\n");
-	if (clue > 2) printf("3 don't say hello\n");
-	if (result == 1) printf("LINE OPEN. You found them.\nA: another night\n");
-	else if (result == 2) printf("DAWN. The signal is gone.\nA: try again\n");
-	else printf("B toggles wide noise gate.\n");
-	rf_footer(help);
-}
-
 void main(void) {
 	uint16_t frequency = 880;
 	uint16_t time = NIGHT_FRAMES;
@@ -51,9 +21,15 @@ void main(void) {
 	uint8_t result = 0;
 	bool gate = false;
 	bool dirty = true;
+	uint8_t intro;
 
 	rf_init(false);
-	RF_LOAD_NATIVE_ART();
+	gfx_show_intro();
+	for (intro = 0; intro < 36; ++intro) {
+		rf_frame();
+		if (rf_input()->pressed) break;
+	}
+	gfx_init();
 	while (1) {
 		const rf_input_t *input;
 		int8_t dx;
@@ -94,7 +70,7 @@ void main(void) {
 			else result = 2;
 		}
 		if (dirty || (rf_frame_count() & 7) == 0) {
-			render(frequency, gain, time, clue, result, gate);
+			gfx_render(frequency, gain, time, clue, result, gate);
 			dirty = false;
 		}
 	}

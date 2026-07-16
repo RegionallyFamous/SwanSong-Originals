@@ -1,24 +1,9 @@
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <string.h>
 
 #include "rf_swan.h"
-#include "native_art.h"
-
-typedef struct {
-	int8_t x;
-	int8_t y;
-	uint8_t hp;
-} unit_t;
-
-static const char __far title[] = "TURNCOAT TACTICS";
-static const char __far subtitle[] = "Capture the eastern beacon";
-static const char __far help[] = "Move A act B turn START end";
-static const char __far fmt_status[] = "TURNS %u  HP %u  RECRUITS %u\n";
-
-#define ALLY_CAPACITY 7
-#define ENEMY_CAPACITY 4
+#include "gfx.h"
 
 static unit_t allies[ALLY_CAPACITY];
 static unit_t enemies[ENEMY_CAPACITY];
@@ -101,36 +86,6 @@ static void enemy_turn(void) {
 	}
 }
 
-static void render(uint8_t cursor_x, uint8_t cursor_y, uint8_t selected,
-	uint8_t turns, uint8_t recruits, uint8_t result) {
-	uint8_t y;
-	uint8_t x;
-	rf_clear();
-	rf_header(title, subtitle);
-	printf(fmt_status, turns, allies[0].hp, recruits);
-	rf_playfield_begin();
-	for (y = 0; y < 6; ++y) {
-		for (x = 0; x < 8; ++x) {
-			int8_t ai = ally_at((int8_t)x, (int8_t)y);
-			int8_t ei = enemy_at((int8_t)x, (int8_t)y);
-			char c = '.';
-			if (x == 7 && y == 2) c = 'B';
-			if (ei >= 0) c = 'E';
-			if (ai >= 0) c = (uint8_t)ai == selected ? 'S' : 'A';
-			if (x == cursor_x && y == cursor_y && c == '.') c = '+';
-			putchar(c);
-		}
-		putchar('\n');
-	}
-	rf_playfield_end();
-	printf("A ally  E rival\n");
-	printf("S pick  B goal\n");
-	if (result == 1) printf("BEACON SECURED. A restart\n");
-	else if (result == 2) printf("COMMAND LOST. A restart\n");
-	else printf("Recruit enemies at 1 HP.\n");
-	rf_footer(help);
-}
-
 void main(void) {
 	uint8_t cursor_x = 0;
 	uint8_t cursor_y = 2;
@@ -139,10 +94,16 @@ void main(void) {
 	uint8_t recruits = 0;
 	uint8_t result = 0;
 	bool dirty = true;
+	uint8_t intro;
 
 	reset_units();
 	rf_init(false);
-	RF_LOAD_NATIVE_ART();
+	gfx_show_intro();
+	for (intro = 0; intro < 36; ++intro) {
+		rf_frame();
+		if (rf_input()->pressed) break;
+	}
+	gfx_init();
 	while (1) {
 		const rf_input_t *input;
 		bool acted = false;
@@ -195,7 +156,8 @@ void main(void) {
 			else if (allies[0].hp == 0 || turns == 0) result = 2;
 		}
 		if (dirty) {
-			render(cursor_x, cursor_y, selected, turns, recruits, result);
+			gfx_render(cursor_x, cursor_y, selected, turns, recruits, result,
+				allies, enemies);
 			dirty = false;
 		}
 	}

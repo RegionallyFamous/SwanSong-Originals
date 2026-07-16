@@ -48,31 +48,13 @@ def test_cartridge_headers():
     assert ids == set(range(1, 11))
 
 
-def test_help_lines_fit():
-    pattern = re.compile(r'static const char __far help\[\] = "([^"]*)";')
-    title_pattern = re.compile(r'static const char __far title\[\] = "([^"]*)";')
+def test_graphical_front_ends():
     for source in sorted((ROOT / "games").glob("*/src/main.c")):
         text = source.read_text()
-        if source.parents[1].name == "orbital-courier":
-            assert "orbital_gfx_render(" in text
-            assert "printf(" not in text
-            continue
-        match = pattern.search(text)
-        assert match, f"missing help line in {source}"
-        assert len(match.group(1)) <= 28, f"help line wraps in {source}"
-        title_match = title_pattern.search(text)
-        assert title_match, f"missing title line in {source}"
-        assert len(title_match.group(1)) <= 26, f"styled title wraps in {source}"
-
-
-def test_dynamic_ui_lines_fit():
-    worst_case_lines = {
-        "mote tempo": "TEMPO 20 SCOPE 2 (B)",
-        "kaiju status": "SUN 24 DIST 100 DATA 3/3",
-        "turncoat status": "TURNS 18  HP 3  RECRUITS 4",
-    }
-    for label, line in worst_case_lines.items():
-        assert len(line) <= 28, f"{label} wraps ({len(line)} columns)"
+        assert '#include "gfx.h"' in text
+        assert "gfx_render(" in text
+        for terminal_call in ("printf(", "putchar(", "rf_header(", "rf_footer("):
+            assert terminal_call not in text, f"terminal call remains in {source}"
 
 
 def test_radio_ghost_timing():
@@ -164,13 +146,12 @@ def test_bug_witch_puzzles():
 
 def main():
     test_cartridge_headers()
-    test_help_lines_fit()
-    test_dynamic_ui_lines_fit()
+    test_graphical_front_ends()
     test_radio_ghost_timing()
     test_courier_route()
     test_rotate_rooms()
     test_bug_witch_puzzles()
-    print("OK   cartridge IDs, UI bounds, timing, routes, rooms, and puzzles")
+    print("OK   cartridge IDs, graphical front ends, timing, routes, rooms, and puzzles")
 
 
 if __name__ == "__main__":

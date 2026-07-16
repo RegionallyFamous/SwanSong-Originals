@@ -212,6 +212,60 @@ void rf_art_load(const uint8_t __far *tiles, uint16_t tile_bytes,
 	ws_display_set_control(WS_DISPLAY_CTRL_SCR1_ENABLE);
 }
 
+static uint16_t gfx_attr(uint16_t tile) {
+	return WS_SCREEN_ATTR_TILE(tile) | WS_SCREEN_ATTR_PALETTE(0);
+}
+
+static void gfx_palette(const uint16_t __far *palette) {
+	if (color_active) {
+		memcpy(WS_SCREEN_COLOR_MEM(0), palette, 4 * sizeof(uint16_t));
+	} else {
+		outportw(WS_SCR_PAL_0_PORT, WS_DISPLAY_MONO_PALETTE(0, 7, 4, 2));
+	}
+}
+
+void rf_gfx_show_intro(const uint8_t __far *tiles, uint16_t tile_bytes,
+	const uint16_t __far *tilemap, const uint16_t __far *palette) {
+	ws_display_set_control(0);
+	memset(WS_TILE_MEM(0), 0, sizeof(ws_display_tile_t));
+	memcpy(WS_TILE_MEM(1), tiles, tile_bytes);
+	gfx_palette(palette);
+	ws_screen_put_tiles(&wse_screen1, tilemap, 0, 0, 28, 18);
+	ws_display_scroll_screen1_to(0, 0);
+	ws_display_set_control(WS_DISPLAY_CTRL_SCR1_ENABLE);
+}
+
+void rf_gfx_load(const uint8_t __far *tiles, uint16_t tile_bytes,
+	const uint16_t __far *palette, uint16_t background_tile) {
+	ws_display_set_control(0);
+	memcpy(WS_TILE_MEM(0), tiles, tile_bytes);
+	gfx_palette(palette);
+	ws_screen_fill_tiles(&wse_screen1, gfx_attr(background_tile), 0, 0, 32, 32);
+	ws_display_scroll_screen1_to(0, 0);
+	ws_display_set_control(WS_DISPLAY_CTRL_SCR1_ENABLE);
+}
+
+void rf_gfx_fill(uint16_t tile, uint8_t x, uint8_t y, uint8_t width,
+	uint8_t height) {
+	ws_screen_fill_tiles(&wse_screen1, gfx_attr(tile), x, y, width, height);
+}
+
+void rf_gfx_put_tile(uint8_t x, uint8_t y, uint16_t tile) {
+	wse_screen1.row[y].cell[x] = gfx_attr(tile);
+}
+
+void rf_gfx_put_image(uint8_t x, uint8_t y, const uint16_t __far *tiles,
+	uint8_t width, uint8_t height) {
+	uint8_t image_y;
+	uint8_t image_x;
+	for (image_y = 0; image_y < height; ++image_y) {
+		for (image_x = 0; image_x < width; ++image_x) {
+			rf_gfx_put_tile((uint8_t)(x + image_x), (uint8_t)(y + image_y),
+				tiles[(uint16_t)image_y * width + image_x]);
+		}
+	}
+}
+
 void rf_playfield_begin(void) {
 	playfield_mode = true;
 }

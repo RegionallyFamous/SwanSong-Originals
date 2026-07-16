@@ -1,0 +1,130 @@
+{
+  "schema_version": "artist-persona-foundry/v1",
+  "slug": "yohaku",
+  "name": "Yohaku",
+  "version": "v1.0.0",
+  "status": "stable",
+  "created": "2026-07-16",
+  "updated": "2026-07-16",
+  "intent": "Repeatable full-screen art direction for original 224x144 four-color homebrew games.",
+  "primary_subject": {
+    "name": "full-screen homebrew gameplay screen",
+    "identity_lock": [
+      "Landscape 14:9 composition designed to survive reduction to exactly 224x144.",
+      "The active playfield occupies 82 to 88 percent of the frame.",
+      "All changing state is expressed by a small coherent family of icons, pips, sockets, meters, brackets, or silhouettes.",
+      "One focal player interaction is understandable without labels."
+    ],
+    "allowed_subjects": [
+      "action games", "puzzle games", "tactics games", "music games", "racing games", "utility toys"
+    ],
+    "avoid": [
+      "text interfaces", "title cards", "dialogue layouts", "static poster compositions", "unplayable cinematic views"
+    ]
+  },
+  "portability": {
+    "style_invariants": [
+      "Use hard pixel clusters aligned to an implied 8x8 tile rhythm.",
+      "Use exactly four dominant colors, always including warm cream and near-black.",
+      "Use flat screen-printed fills with sparse registration slips and controlled halftone outside critical gameplay silhouettes.",
+      "Give the main player, target, selection, and hazard different silhouettes before relying on color.",
+      "Keep the playfield dominant and the icon HUD compact.",
+      "Prohibit all text, pseudo-text, fake labels, logos, and decorative UI that does not communicate state."
+    ],
+    "subject_adapter": [
+      "Replace the seed interaction with the requested game's verified player, target, resources, progress, and result states.",
+      "Preserve the requested game's spatial logic; generated geometry is visual direction only and never authoritative collision data.",
+      "Translate every prior text status into one named icon family before generation.",
+      "Keep subjects original and non-infringing; reject commercial silhouettes, insignia, or franchise-specific anatomy."
+    ],
+    "composition_adapter": [
+      "For grid games, devote at least 82 percent of the screen to a regular readable grid and reserve at most two tile rows for HUD.",
+      "For side-view action, give the action lane at least two thirds of the height and keep resources in one top strip.",
+      "For instrument and repair games, treat controls as large physical game objects instead of labeled panels.",
+      "For tiny icons, simplify to one outer silhouette plus one interior state mark.",
+      "For result states, overlay one large success or failure glyph and one replay loop without replacing the gameplay scene."
+    ],
+    "motif_policy": {
+      "required": ["one functional selection bracket or state ring", "one imperfect printed edge"],
+      "optional": ["torn-paper edge", "single tape scrap", "editorial arrow", "registration slip"],
+      "avoid": ["repeated decorative emblems", "fake writing", "dense star confetti", "unmotivated knobs", "ornamental borders"],
+      "subject_specific": ["Use stars only for space scenes", "use circuit traces only for logic games", "use speed marks only for racing or projectiles"]
+    },
+    "benchmark_subjects": [
+      "orbital delivery maze", "music sequencer", "repair bay", "radio waveform", "lunar tagging lane",
+      "tactics grid", "wildlife camera", "rotating dungeon", "three-lane race", "logic circuit"
+    ],
+    "avoid_when_adapting": [
+      "forcing a cockpit onto every game", "using the same round HUD container everywhere", "shrinking interactive objects to make room for prose", "copying generated maze or board geometry into game logic"
+    ]
+  },
+  "style": {
+    "core_read": "A playable 8-bit screen printed like a worn 1970s photocopied instruction-zine spread, with modern icon clarity and no words.",
+    "shape_language": [
+      "Blocky 8x8 and 16x16 modules with clipped corners.",
+      "Large simple silhouettes for player, target, pickup, and hazard.",
+      "Circular rings are reserved for goals, progress, or selection.",
+      "Asymmetry comes from the play state, not random decoration."
+    ],
+    "line_language": [
+      "Near-black one-to-two-pixel-equivalent contours at native scale.",
+      "Broken photocopy edges may appear on scenery but never on collision boundaries or icon silhouettes.",
+      "Interior marks are sparse, squared, and functional."
+    ],
+    "rendering": [
+      "Flat fills only; no gradients, glossy reflections, airbrush shading, or antialiasing.",
+      "At most one dither or halftone texture per quiet region.",
+      "Use offset accent ink as a deliberate one-pixel-equivalent registration effect.",
+      "Native conversion uses nearest four-color quantization and hand-authored gameplay metatiles."
+    ],
+    "palette": {
+      "dominant": ["warm cream #f5f0e6", "near-black #1a1a1a"],
+      "accent": ["choose exactly two from hot pink #ff6b9d, butter yellow #ffe566, baby blue #a8d5e5, pale pink #f4c7c3"],
+      "forbidden": ["gradients", "unbounded color ramps", "neon glow blooms", "photographic gray noise"]
+    },
+    "composition": [
+      "Landscape 14:9 and legible after reduction to 224x144.",
+      "Playfield occupies 82 to 88 percent; HUD uses one compact edge strip.",
+      "One focal interaction, one secondary prop cluster, and quiet breathing room around critical silhouettes.",
+      "No prose-safe blank panel because prose is not part of the renderer."
+    ],
+    "texture": [
+      "Sparse risograph halftone outside active cells.",
+      "One torn or imperfect printed edge per screen is enough.",
+      "Registration slip is limited to accent edges and never obscures a sprite."
+    ],
+    "lighting": [
+      "Flat graphic value separation only.",
+      "No volumetric light, realistic cast shadows, or incompatible light sources."
+    ],
+    "weirdness_ratio": "80% playable clarity, 20% handmade print oddness"
+  },
+  "prompting": {
+    "master_prompt": "Create a full-screen art master for an actual 224x144 original homebrew game. Make it read as active gameplay at first glance. Use a landscape 14:9 frame, devote 82 to 88 percent to the playfield, and express every changing state through a compact icon-only HUD. Use deliberately authored 8-bit pixel art fused with 1970s photocopied zine and risograph printing: hard 8x8-aligned clusters, flat four-color screen-printed shapes, sparse halftone outside critical gameplay silhouettes, slightly imperfect ink registration, and one restrained printed edge. Preserve verified game geometry and make player, target, pickup, selection, hazards, resources, progress, and results distinguishable by silhouette. Text: none.",
+    "seed_subject_prompt": "Design an original top-down orbital courier screen with a dominant movement grid, one courier, one parcel, one delivery ring, five fuel pips, cargo state, route progress, and graphical result/replay glyphs in the Yohaku house style.",
+    "portable_prompt_template": "Design [game name and genre] as an original 224x144 full-screen gameplay master in the Yohaku house style. Verified interaction: [player action and spatial rules]. Required objects: [player, target, pickups, hazards]. Required icon families: [resources, state, progress, results]. Composition adapter: [grid, side-view, instrument, racing, or puzzle rule]. Use warm cream, near-black, and exactly two named accent colors. Text: none. Avoid: [subject-specific drift risks] plus the Yohaku hard avoid list.",
+    "negative_prompt": "No words, letters, numbers, pseudo-writing, fake labels, logo, title card, dialogue box, instructions, portrait-first composition, large empty prose panel, commercial character silhouette, franchise insignia, decorative border, gradients, antialiasing, glossy rendering, tiny clutter, repeated meaningless emblems, malformed focal anatomy, watermark, or generated geometry treated as authoritative game logic.",
+    "prompt_formula": "Verified game loop + named player/target/hazards + complete icon-state inventory + Yohaku master prompt + composition adapter + exact four-color palette + subject-specific avoid list."
+  },
+  "source_safety": {
+    "original_style_only": true,
+    "no_named_artist_mimicry": true,
+    "reference_policy": "Use project references only for original subject continuity, generic pixel/print process, composition, palette, and state hierarchy; never imitate a named artist, studio, franchise, logo, or commercial character design."
+  },
+  "benchmarks": [
+    {"id": "signature-subject", "purpose": "Orbital Courier tests grid clarity, pickup/goal hierarchy, scrolling adaptation, and icon HUD."},
+    {"id": "pose-state-shift", "purpose": "Harpoon Moon tests moving side-view action, charge reach, resource pressure, and boss state."},
+    {"id": "related-character", "purpose": "Pocket Kaiju Observatory tests an original creature, tiny observer, viewfinder, and gentle tone."},
+    {"id": "object", "purpose": "Scrapframe Garage tests a large nonhumanoid machine and three recognizable part icons."},
+    {"id": "scene", "purpose": "Radio Ghost tests a dark environment, analog receiver, tuning line, and one spectral ribbon."},
+    {"id": "icon-tiny-read", "purpose": "Mote Sound Terminal tests play/pause, crystal tracks, tempo pips, scope modes, and sixteen beat cells."},
+    {"id": "busy-composition", "purpose": "Turncoat Tactics tests an 8x6 board, seven units, health pips, selection, cursor, and beacon hierarchy."},
+    {"id": "production-use", "purpose": "One Last Lap tests pseudo-3D lanes, several machine silhouettes, hazards, speed, battery, and progress."},
+    {"id": "edge-case", "purpose": "Rotate Dungeon tests a dense regular grid, generated-vs-verified geometry separation, and orientation state."},
+    {"id": "logic-system", "purpose": "Bug Witch tests exactly five sockets, three related icons, cursor, input/output, budget, and run state."}
+  ],
+  "evaluation": {
+    "passing_score": 4,
+    "criteria": ["identity lock", "style invariants", "portability", "prompt obedience", "production usefulness"]
+  }
+}

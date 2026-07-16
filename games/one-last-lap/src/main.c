@@ -1,39 +1,8 @@
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
 
 #include "rf_swan.h"
-#include "native_art.h"
-
-static const char __far title[] = "ONE LAST LAP";
-static const char __far subtitle[] = "Old couriers never quit";
-static const char __far help[] = "A gas B brake D-pad lane";
-static const char __far fmt_status[] = "LAP %u/3 SPD %u BAT %u\n";
-
-static void render(uint8_t lap, uint8_t progress, uint8_t speed,
-	uint8_t battery, uint8_t lane, bool helped, uint8_t result) {
-	uint8_t row;
-	rf_clear();
-	rf_header(title, subtitle);
-	printf(fmt_status, lap, speed, battery);
-	printf("TRACK ");
-	rf_print_bar(progress, 100, 10);
-	putchar('\n');
-	printf("RIV %u/%u/%u\n", (progress + 13) % 100, (progress + 31) % 100,
-		(progress + 57) % 100);
-	printf("\n");
-	rf_playfield_begin();
-	for (row = 0; row < 3; ++row) {
-		printf(row == lane ? "|======[@]======|\n" : "|======[.]======|\n");
-	}
-	rf_playfield_end();
-	printf("\nRIVAL %s\n", helped ? "TOWED" : "WAIT @48");
-	if (result == 1 && helped) printf("YOU FINISHED TOGETHER.\nA: race again\n");
-	else if (result == 1) printf("YOU WON, BUT DROVE ALONE.\nA: race again\n");
-	else if (result == 2) printf("BATTERY COLD. A: retry\n");
-	else printf("START near rival to tow.\n");
-	rf_footer(help);
-}
+#include "gfx.h"
 
 void main(void) {
 	uint8_t lap = 1;
@@ -45,9 +14,15 @@ void main(void) {
 	bool helped = false;
 	bool crash_zone = false;
 	bool dirty = true;
+	uint8_t intro;
 
 	rf_init(false);
-	RF_LOAD_NATIVE_ART();
+	gfx_show_intro();
+	for (intro = 0; intro < 36; ++intro) {
+		rf_frame();
+		if (rf_input()->pressed) break;
+	}
+	gfx_init();
 	while (1) {
 		const rf_input_t *input;
 		rf_frame();
@@ -88,7 +63,7 @@ void main(void) {
 			if (battery == 0) { speed = 0; result = 2; dirty = true; }
 		}
 		if (dirty || (rf_frame_count() & 15) == 0) {
-			render(lap > 3 ? 3 : lap, progress, speed, battery, lane, helped, result);
+			gfx_render(lap > 3 ? 3 : lap, progress, speed, battery, lane, helped, result);
 			dirty = false;
 		}
 	}

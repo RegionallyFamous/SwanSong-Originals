@@ -7,16 +7,16 @@ utility loop, and a clean replay/reset path.
 
 ![All ten games running with native pixel-zine graphics](docs/qa/boot-frames.png)
 
-Orbital Courier is the first full-screen gameplay-art rebuild: its scrolling
-playfield, characters, objects, and icon-only HUD all follow one Imagegen art
-master. The other nine cartridges retain their four-color pixel-zine art stamps
-while the same screen-by-screen pass continues. Source images, exact prompts,
-hashes, conversion tools, and native proofs are documented in
-[docs/art/](docs/art/).
+All ten cartridges now use complete Imagegen-directed gameplay screens rather
+than text layouts with decorative art stamps. Their playfields, characters,
+objects, meters, selections, and result states are native graphical tiles with
+icon-only HUDs. The original Yohaku style contract, source masters, prompt
+formula, hashes, conversion tools, learning log, sprite atlases, and native
+proofs are documented in [docs/art/full-screen/](docs/art/full-screen/).
 
 ## The ten games
 
-| Project | Complete v1 loop |
+| Project | Complete loop |
 | --- | --- |
 | Mote Sound Terminal | Play three original synth sequences, change track and tempo, and switch audio-reactive scopes |
 | Orbital Courier | Find a parcel, route through obstacles, and deliver before fuel expires |
@@ -33,11 +33,11 @@ Detailed rules and controls are in [docs/CONCEPTS.md](docs/CONCEPTS.md).
 
 ## Completion and testing
 
-The v1 software scope is complete and tested as ten short-session games. The
+The current software scope is complete and tested as ten short-session games. The
 test suite covers cartridge metadata, UI bounds, authored puzzle/route
 solvability, deterministic success and failure paths, reset behavior, native
-art provenance/tilemap integrity, Orbital Courier's full-screen graphical
-renderer, and rendered emulator startup for all ten ROMs.
+art provenance/tilemap integrity, every full-screen graphical renderer, and
+rendered emulator startup for all ten ROMs.
 
 ```sh
 make clean test
@@ -69,14 +69,19 @@ Locally and continuously validated package revisions are recorded in
 
 ## Repository map
 
-- `engine/` — shared input, native color/tile UI, VBlank, PRNG, meters,
-  orientation state, and wavetable feedback audio;
+- `engine/` — shared input, full-screen tile rendering, native palettes, VBlank,
+  PRNG, orientation state, and wavetable feedback audio;
 - `games/` — ten independent cartridge projects;
 - `mk/` — common Wonderful build rules;
 - `tools/` — ROM, UI, gameplay-path, and emulator checks;
-- `docs/` — game manual, originality policy, QA, art provenance, and the
-  [pixel-zine style contract](docs/art/STYLE.md); and
+- `artist-personas/yohaku/` — validated, versioned house-style contract,
+  benchmarks, failure modes, and prompt recipes;
+- `docs/` — game manual, originality policy, QA, source masters, and art
+  provenance; and
 - `dist/` — ignored local cartridge output.
+
+`make art` reruns the shared, deterministic master-to-tile pipeline when a
+future game or visual lesson is added.
 
 ## Originality and compatibility
 

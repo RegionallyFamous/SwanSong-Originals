@@ -1,43 +1,8 @@
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
 
 #include "rf_swan.h"
-#include "native_art.h"
-
-static const char __far title[] = "HARPOON MOON";
-static const char __far subtitle[] = "Tag the constellation herd";
-static const char __far help[] = "Move hold A/fire B lure";
-static const char __far fmt_status[] = "O2 %u   TAGS %u/3  BOSS %u\n";
-static const char __far fmt_charge[] = "HARPOON ";
-
-static void render(uint8_t skiff, uint8_t creature, uint16_t oxygen,
-	uint8_t tags, uint8_t boss_hp, uint8_t charge, uint8_t result) {
-	uint8_t x;
-	rf_clear();
-	rf_header(title, subtitle);
-	printf(fmt_status, oxygen / 75, tags, boss_hp);
-	rf_playfield_begin();
-	printf(".  *   .  *   .  *\n");
-	printf("_____________________\n");
-	for (x = 0; x < 21; ++x) {
-		char c = '~';
-		if (x == creature) c = tags < 3 ? '*' : 'M';
-		if (x == skiff) c = 'S';
-		putchar(c);
-	}
-	putchar('\n');
-	printf("_____________________\n\n");
-	rf_playfield_end();
-	printf(fmt_charge);
-	rf_print_bar(charge, 20, 10);
-	putchar('\n');
-	if (result == 1) printf("FIELD TAG COMPLETE! A again\n");
-	else if (result == 2) printf("OXYGEN EMPTY. A to retry\n");
-	else if (tags < 3) printf("Tag three small creatures.\n");
-	else printf("The moon leviathan rises.\n");
-	rf_footer(help);
-}
+#include "gfx.h"
 
 void main(void) {
 	uint8_t skiff = 3;
@@ -48,9 +13,15 @@ void main(void) {
 	uint8_t result = 0;
 	uint16_t oxygen = 1200;
 	bool dirty = true;
+	uint8_t intro;
 
 	rf_init(false);
-	RF_LOAD_NATIVE_ART();
+	gfx_show_intro();
+	for (intro = 0; intro < 36; ++intro) {
+		rf_frame();
+		if (rf_input()->pressed) break;
+	}
+	gfx_init();
 	while (1) {
 		const rf_input_t *input;
 		int8_t dx;
@@ -101,7 +72,7 @@ void main(void) {
 			else if (oxygen == 0) result = 2;
 		}
 		if (dirty || (rf_frame_count() & 7) == 0) {
-			render(skiff, creature, oxygen, tags, boss_hp, charge, result);
+			gfx_render(skiff, creature, oxygen, tags, boss_hp, charge, result);
 			dirty = false;
 		}
 	}

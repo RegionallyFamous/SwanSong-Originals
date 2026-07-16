@@ -1,20 +1,10 @@
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
 
 #include "rf_swan.h"
-#include "native_art.h"
+#include "gfx.h"
 
-static const char __far title[] = "ROTATE DUNGEON";
-static const char __far subtitle[] = "The room changes when turned";
-static const char __far help[] = "Move  START rotate  B reset";
-static const char __far fmt_status[] = "ROOM %u/5  KEY %s  VIEW %s\n";
-static const char __far yes_text[] = "YES";
-static const char __far no_text[] = "NO";
-static const char __far horiz_text[] = "H";
-static const char __far vert_text[] = "V";
-
-static bool blocked(uint8_t room, bool vertical, uint8_t x, uint8_t y) {
+bool rotate_blocked(uint8_t room, bool vertical, uint8_t x, uint8_t y) {
 	uint8_t gap;
 	if (x == 0 || x == 11 || y == 0 || y == 7) return true;
 	if (!vertical) {
@@ -25,33 +15,8 @@ static bool blocked(uint8_t room, bool vertical, uint8_t x, uint8_t y) {
 	return y == (uint8_t)(2 + room % 4) && x != gap;
 }
 
-static uint8_t key_x(uint8_t room) { return (uint8_t)(2 + room); }
-static uint8_t key_y(uint8_t room) { return (uint8_t)(6 - (room & 1)); }
-
-static void render(uint8_t room, bool vertical, uint8_t px, uint8_t py,
-	bool key, uint8_t result) {
-	uint8_t y;
-	uint8_t x;
-	rf_clear();
-	rf_header(title, subtitle);
-	printf(fmt_status, room + 1, key ? yes_text : no_text, vertical ? vert_text : horiz_text);
-	rf_playfield_begin();
-	for (y = 0; y < 8; ++y) {
-		for (x = 0; x < 12; ++x) {
-			char c = blocked(room, vertical, x, y) ? '#' : '.';
-			if (!key && x == key_x(room) && y == key_y(room)) c = 'K';
-			if (x == 10 && y == 1) c = 'G';
-			if (x == px && y == py) c = '@';
-			putchar(c);
-		}
-		putchar('\n');
-	}
-	rf_playfield_end();
-	printf("Rotate changes solid walls.\n");
-	if (result) printf("FLOOR CLEARED! A restart\n");
-	else printf("Find K, then reach G.\n");
-	rf_footer(help);
-}
+uint8_t rotate_key_x(uint8_t room) { return (uint8_t)(2 + room); }
+uint8_t rotate_key_y(uint8_t room) { return (uint8_t)(6 - (room & 1)); }
 
 void main(void) {
 	uint8_t room = 0;
@@ -61,9 +26,15 @@ void main(void) {
 	bool vertical = false;
 	bool key = false;
 	bool dirty = true;
+	uint8_t intro;
 
 	rf_init(false);
-	RF_LOAD_NATIVE_ART();
+	gfx_show_intro();
+	for (intro = 0; intro < 36; ++intro) {
+		rf_frame();
+		if (rf_input()->pressed) break;
+	}
+	gfx_init();
 	while (1) {
 		const rf_input_t *input;
 		rf_frame();
@@ -79,7 +50,7 @@ void main(void) {
 			if (input->pressed & WS_KEY_START) {
 				vertical = !vertical;
 				rf_set_orientation(vertical);
-				if (blocked(room, vertical, px, py)) { px = 1; py = 1; }
+				if (rotate_blocked(room, vertical, px, py)) { px = 1; py = 1; }
 				rf_beep(vertical ? 520 : 360, 6);
 				dirty = true;
 			}
@@ -90,11 +61,11 @@ void main(void) {
 			if (dx || dy) {
 				uint8_t nx = (uint8_t)(px + dx);
 				uint8_t ny = (uint8_t)(py + dy);
-				if (!blocked(room, vertical, nx, ny)) { px = nx; py = ny; }
+				if (!rotate_blocked(room, vertical, nx, ny)) { px = nx; py = ny; }
 				else rf_beep(100, 3);
 				dirty = true;
 			}
-			if (px == key_x(room) && py == key_y(room)) key = true;
+			if (px == rotate_key_x(room) && py == rotate_key_y(room)) key = true;
 			if (key && px == 10 && py == 1) {
 				if (++room >= 5) result = 1;
 				else { px = 1; py = 1; key = false; }
@@ -102,7 +73,7 @@ void main(void) {
 			}
 		}
 		if (dirty) {
-			render(room < 5 ? room : 4, vertical, px, py, key, result);
+			gfx_render(room < 5 ? room : 4, vertical, px, py, key, result);
 			dirty = false;
 		}
 	}

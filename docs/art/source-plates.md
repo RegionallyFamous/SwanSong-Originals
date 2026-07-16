@@ -5,13 +5,13 @@ image-generation tool. The anthology concept sheet was supplied as a **style
 reference only**. No franchise art, screenshots, logos, or third-party assets
 were supplied or used.
 
-The high-resolution plates are retained in `docs/art/source-plates/`.
-`tools/build_native_art.py` converts nine of them into the checked-in art stamps
-used by those games. Orbital Courier's first plate is retained as historical
-direction, but its cartridge now uses the complete full-screen master and
-renderer documented in
-[`full-screen/orbital-courier-gameplay.md`](full-screen/orbital-courier-gameplay.md).
-Enlarged nearest-neighbor proofs are retained in `docs/art/native/`.
+The high-resolution plates are retained in `docs/art/source-plates/` as the
+first anthology exploration. They are historical direction and are no longer
+loaded by the cartridges. Every ROM now uses the complete full-screen master,
+native gameplay bank, and renderer documented in [`full-screen/`](full-screen/).
+`tools/build_native_art.py` remains as a compatibility entry point for the new
+`tools/build_fullscreen_art.py` pipeline. Enlarged native proofs are retained
+in `docs/art/native/`.
 
 | Game | Source dimensions | SHA-256 | Critique |
 | --- | --- | --- | --- |

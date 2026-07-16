@@ -21,6 +21,15 @@ void rf_footer(const char __far *help);
 void rf_art_load(const uint8_t __far *tiles, uint16_t tile_bytes,
 	const uint16_t __far *tilemap, uint8_t width, uint8_t height,
 	uint8_t screen_x, uint8_t screen_y, const uint16_t __far *palette);
+void rf_gfx_show_intro(const uint8_t __far *tiles, uint16_t tile_bytes,
+	const uint16_t __far *tilemap, const uint16_t __far *palette);
+void rf_gfx_load(const uint8_t __far *tiles, uint16_t tile_bytes,
+	const uint16_t __far *palette, uint16_t background_tile);
+void rf_gfx_fill(uint16_t tile, uint8_t x, uint8_t y, uint8_t width,
+	uint8_t height);
+void rf_gfx_put_tile(uint8_t x, uint8_t y, uint16_t tile);
+void rf_gfx_put_image(uint8_t x, uint8_t y, const uint16_t __far *tiles,
+	uint8_t width, uint8_t height);
 void rf_playfield_begin(void);
 void rf_playfield_end(void);
 

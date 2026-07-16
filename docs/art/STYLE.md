@@ -11,13 +11,15 @@ handheld-game context without copying its logo, portrait, content, or layout.
   `#a8d5e5`, and pale pink `#f4c7c3`; one main accent family per scene.
 - **Construction:** deliberate pixel clusters plus risograph misregistration,
   photocopy grain, halftone dots, torn or pinked edges, and translucent tape.
-- **Composition:** one focal action, one secondary prop group, and visible quiet
-  space. Panels may be crooked or asymmetrical but never arbitrary.
+- **Composition:** one focal interaction, one secondary prop group, and enough
+  quiet space to separate silhouettes without surrendering the playfield.
+  Panels may be crooked or asymmetrical but never arbitrary.
 - **Marks:** arrows, circles, underlines, and bold abstract blocks act like an
   editor's physical annotations.
-- **ROM UI:** a star-prefixed accent-ink title, cut-tape `==//...//==` rule,
-  per-game four-color art stamp, and custom map glyphs carry the editorial
-  voice into every cartridge at native resolution.
+- **ROM UI:** a dominant 82–88 percent playfield, game-specific 16×16 actors or
+  physical controls, and a compact icon-only HUD carry the editorial voice into
+  every cartridge at native resolution. No title, prose, or help text is drawn
+  during play.
 
 ## Anti-generator gate
 
