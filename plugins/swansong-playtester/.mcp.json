@@ -1,6 +1,10 @@
 {
   "mcpServers": {
     "swansong-playtester": {
+      "command": "./scripts/run_swansong_playtest_mcp.sh",
+      "cwd": "."
+    },
+    "swansong-translation-lab": {
       "command": "./scripts/run_swansong_mcp.sh",
       "cwd": "."
     }

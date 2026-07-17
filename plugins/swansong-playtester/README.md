@@ -1,9 +1,17 @@
 # SwanSong Playtester
 
-This plugin lets an agent play the built SwanSong Originals cartridges as a
-black box. SwanSong Desktop boots the unmodified `.wsc` file in its own engine,
-applies an exact frame/input plan, and returns both the native screenshot and a
-replayable evidence report through SwanSong's MCP server.
+This plugin connects an agent to SwanSong Desktop's full deterministic MCP
+server. In addition to black-box SwanSong Originals playtesting, it exposes the
+guarded Translation Lab capture and rectangle probes plus recoverable
+observed-play sessions. SwanSong keeps project evidence private unless a tool's
+explicit sharing or project-write confirmation allows that operation.
+
+The currently exposed tool families are:
+
+- deterministic one-shot playtest plans;
+- deterministic Original/Patched one-shot comparisons;
+- Translation Lab paired capture and rectangle ownership/source probes; and
+- observed-play start, resume, step, finish, and cancel.
 
 The key quality rule is simple: a successful build or boot is not a gameplay
 pass. The agent must inspect the screen, choose an input from the visible state,
