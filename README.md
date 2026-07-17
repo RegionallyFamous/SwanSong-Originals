@@ -37,7 +37,7 @@ The current software scope is complete and tested as ten short-session games. Th
 test suite covers cartridge metadata, UI bounds, authored puzzle/route
 solvability, deterministic success and failure paths, reset behavior, native
 art provenance/tilemap integrity, every full-screen graphical renderer, and
-rendered emulator startup for all ten ROMs.
+rendered SwanSong startup for all ten ROMs.
 
 ```sh
 make clean test
@@ -46,9 +46,16 @@ make smoke
 
 `make test` builds and structurally verifies every ROM, then runs the host-side
 invariant, gameplay-path, and native-art suites. `make smoke` additionally
-launches every ROM in Mednafen and requires a nonblank rendered frame. The
+launches every ROM through SwanSong's own engine and requires a native rendered
+frame. The
 retained evidence and remaining hardware limits are recorded in
 [docs/STATUS.md](docs/STATUS.md).
+
+For agent-driven black-box play rather than boot-only smoke testing, install the
+[SwanSong Playtester](plugins/swansong-playtester/README.md). It exposes live
+screenshots, frame-counted controls, and deterministic replay traces over MCP;
+its required loop explicitly prevents a boot screen from being called a
+gameplay pass.
 
 ## Build requirements
 
@@ -56,7 +63,7 @@ retained evidence and remaining hardware limits are recorded in
   `WONDERFUL_TOOLCHAIN` to another installation;
 - GNU Make;
 - Python 3 for verification; and
-- Mednafen plus FFmpeg for the optional rendered-frame smoke lane.
+- SwanSong Desktop for the rendered-frame smoke and agent playtest lanes.
 
 Successful builds are copied into ignored local `dist/`. Build one game with:
 
@@ -73,7 +80,7 @@ Locally and continuously validated package revisions are recorded in
   PRNG, orientation state, and wavetable feedback audio;
 - `games/` — ten independent cartridge projects;
 - `mk/` — common Wonderful build rules;
-- `tools/` — ROM, UI, gameplay-path, and emulator checks;
+- `tools/` — ROM, UI, gameplay-path, and SwanSong execution checks;
 - `artist-personas/yohaku/` — validated, versioned house-style contract,
   benchmarks, failure modes, and prompt recipes;
 - `docs/` — game manual, originality policy, QA, source masters, and art

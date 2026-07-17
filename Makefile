@@ -10,7 +10,7 @@ GAMES := \
 	one-last-lap \
 	bug-witch
 
-.PHONY: all art clean dist engine verify test smoke $(GAMES)
+.PHONY: all art clean dist engine verify test smoke playtester-check $(GAMES)
 
 all: engine $(GAMES)
 
@@ -38,7 +38,10 @@ test: verify
 	python3 tools/test_native_art.py
 
 smoke: test
-	tools/smoke_mednafen.sh dist/*.wsc
+	tools/smoke_swansong.sh dist/*.wsc
+
+playtester-check: dist
+	plugins/swansong-playtester/tests/check_swansong_bridge.sh
 
 clean:
 	$(MAKE) -C engine clean

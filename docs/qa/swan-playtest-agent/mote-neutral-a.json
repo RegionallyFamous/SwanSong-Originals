@@ -1,0 +1,47 @@
+{
+  "audio" : {
+    "channels" : 2,
+    "finalWindowEmulatedFrames" : 30,
+    "finalWindowNonzeroSamples" : 38160,
+    "finalWindowPCMFloatSHA256" : "b9e956d272c1cc22c65c5aa5bbb49897074a7946099abd83d7d8017996a5b632",
+    "finalWindowPeakAbsoluteSample" : 0.09691233,
+    "finalWindowSampleFrames" : 19080,
+    "finalWindowWAVByteCount" : 76364,
+    "finalWindowWAVSHA256" : "a89217f0af6d10308b65306d03c5b36cab7ec57bcbbe7a7d98f724e3963c0ee9",
+    "nonzeroSamples" : 152638,
+    "pcmFloatSHA256" : "03f6891d9f292c08a341dfefaf53a451bff1b94685aa54eb21cfb61aadcc0783",
+    "peakAbsoluteSample" : 0.09691233,
+    "sampleFrames" : 76321,
+    "sampleRate" : 48000
+  },
+  "captureHeight" : 144,
+  "capturePNG_SHA256" : "d2a24ffa10cd2759da0cd02fcc2f304b9293fc5f6fec2ffa827356bda8bcb57c",
+  "captureWidth" : 237,
+  "engineBackend" : "ares",
+  "engineBuildID" : "ares-449b93716fb162632de2fd43bf2eba2064fa43f2-swan-abi5",
+  "finalFrameNumber" : 120,
+  "finalGameRasterSHA256" : "d2d9375213b35c5503f4dde0ed0251a1494397db6bd8ec46995cd51efdfcdb60",
+  "hardwareModel" : "wonderswan-color",
+  "openIPLIdentifier" : "open-bootstrap-v3",
+  "persistencePolicy" : "isolated-empty-v1",
+  "plan" : {
+    "events" : [
+      {
+        "frameIndex" : 0,
+        "inputs" : [
+
+        ]
+      }
+    ],
+    "schema" : "swan-song-frame-input-plan-v1",
+    "totalFrames" : 120
+  },
+  "romByteCount" : 131072,
+  "romChecksum" : 49630,
+  "romSHA256" : "d5a741934a425f3e3a4c1a58ffb8e4f2a948a09063874ce8789d0c438ba813e0",
+  "rtcSeedUnixSeconds" : 946684800,
+  "scheduledInputFrames" : 0,
+  "scheduledInputTransitions" : 1,
+  "schema" : "swan-song-playtest-report-v1",
+  "totalFrames" : 120
+}

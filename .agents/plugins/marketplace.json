@@ -1,0 +1,20 @@
+{
+  "name": "swansong-originals",
+  "interface": {
+    "displayName": "SwanSong Originals"
+  },
+  "plugins": [
+    {
+      "name": "swansong-playtester",
+      "source": {
+        "source": "local",
+        "path": "./plugins/swansong-playtester"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

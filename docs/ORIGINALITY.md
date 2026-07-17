@@ -17,5 +17,5 @@ Before publishing a release:
 1. Search source, documentation, and generated-art prompts for third-party
    franchise names or copied terminology.
 2. Verify that all ten default ROMs build from the public tree.
-3. Run the structural, gameplay-path, and emulator-frame test lanes.
+3. Run the structural, gameplay-path, and SwanSong-frame test lanes.
 4. Review new art and audio against their recorded source/provenance notes.

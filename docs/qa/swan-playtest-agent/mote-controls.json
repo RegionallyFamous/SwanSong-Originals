@@ -1,0 +1,95 @@
+{
+  "audio" : {
+    "channels" : 2,
+    "finalWindowEmulatedFrames" : 30,
+    "finalWindowNonzeroSamples" : 38160,
+    "finalWindowPCMFloatSHA256" : "532fd7e1614bf87acce0f2d746fc718d9293ca0d0bf98bc15acb9fffc237a325",
+    "finalWindowPeakAbsoluteSample" : 0.09907709,
+    "finalWindowSampleFrames" : 19080,
+    "finalWindowWAVByteCount" : 76364,
+    "finalWindowWAVSHA256" : "7f1919ec251453426c11a04a8797f405697422e47f60d7e6918dfa58aa9f35e7",
+    "nonzeroSamples" : 152638,
+    "pcmFloatSHA256" : "759ea56f858811838c9ab2f8131142d9ebb48d5db5f07c6b6d44a3281495a1d5",
+    "peakAbsoluteSample" : 0.09907709,
+    "sampleFrames" : 76321,
+    "sampleRate" : 48000
+  },
+  "captureHeight" : 144,
+  "capturePNG_SHA256" : "30efae4dc510173546cace82e446783a166aa476a8a4ba213acdcd0ef2223a82",
+  "captureWidth" : 237,
+  "engineBackend" : "ares",
+  "engineBuildID" : "ares-449b93716fb162632de2fd43bf2eba2064fa43f2-swan-abi5",
+  "finalFrameNumber" : 120,
+  "finalGameRasterSHA256" : "8d30e0eadd216344ceda2cd8772742bdce7574cc6fb92b41f03a5b4fbe9e36b1",
+  "hardwareModel" : "wonderswan-color",
+  "openIPLIdentifier" : "open-bootstrap-v3",
+  "persistencePolicy" : "isolated-empty-v1",
+  "plan" : {
+    "events" : [
+      {
+        "frameIndex" : 0,
+        "inputs" : [
+
+        ]
+      },
+      {
+        "frameIndex" : 60,
+        "inputs" : [
+          "x2"
+        ]
+      },
+      {
+        "frameIndex" : 61,
+        "inputs" : [
+
+        ]
+      },
+      {
+        "frameIndex" : 70,
+        "inputs" : [
+          "x3"
+        ]
+      },
+      {
+        "frameIndex" : 71,
+        "inputs" : [
+
+        ]
+      },
+      {
+        "frameIndex" : 80,
+        "inputs" : [
+          "b"
+        ]
+      },
+      {
+        "frameIndex" : 81,
+        "inputs" : [
+
+        ]
+      },
+      {
+        "frameIndex" : 90,
+        "inputs" : [
+          "a"
+        ]
+      },
+      {
+        "frameIndex" : 91,
+        "inputs" : [
+
+        ]
+      }
+    ],
+    "schema" : "swan-song-frame-input-plan-v1",
+    "totalFrames" : 120
+  },
+  "romByteCount" : 131072,
+  "romChecksum" : 49630,
+  "romSHA256" : "d5a741934a425f3e3a4c1a58ffb8e4f2a948a09063874ce8789d0c438ba813e0",
+  "rtcSeedUnixSeconds" : 946684800,
+  "scheduledInputFrames" : 4,
+  "scheduledInputTransitions" : 9,
+  "schema" : "swan-song-playtest-report-v1",
+  "totalFrames" : 120
+}
