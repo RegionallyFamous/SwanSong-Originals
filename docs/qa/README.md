@@ -1,11 +1,11 @@
-# Emulator frame evidence
+# SwanSong frame evidence
 
 `boot-frames.png` is a contact sheet captured from the ten locally built ROMs
-with `tools/capture_mednafen.sh` on 2026-07-16. Each panel is the last frame of
-a 0.8-second headless Mednafen run. It demonstrates that every cartridge enters
+with `tools/capture_swansong.sh` on 2026-07-16. Each panel is frame 120 from a
+clean, deterministic SwanSong boot. It demonstrates that every cartridge enters
 its game loop and renders its full-screen playfield, live actors or controls,
 and icon-only HUD. This is not evidence of a complete playthrough or physical
 hardware compatibility. Individual captures are retained in `native-frames/`.
 
-- Mednafen: 1.32.1
-- Image SHA-256: `7f28b0a9c519b20c05f7399676d2f46249aae7842c729a3ce96b706e08e42a8c`
+- Runner: SwanSong Desktop `SwanSongRouteRunner playtest-plan`
+- Image SHA-256: `d2c5b0c623fb276f40e7c1a6ecc89f824b91f5eab914a049bdcb58c9ba48005b`

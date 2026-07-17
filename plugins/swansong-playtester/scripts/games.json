@@ -1,0 +1,72 @@
+{
+  "mote-sound-terminal": {
+    "title": "Mote Sound Terminal",
+    "rom": "mote_sound_terminal.wsc",
+    "goal": "Change track and tempo, switch the scope, pause and resume playback, then reset.",
+    "controls": {"left": "previous track", "right": "next track", "up": "faster", "down": "slower", "a": "play or pause", "b": "change scope", "start": "reset"},
+    "required_checks": ["track state changes", "tempo state changes", "scope changes", "playback visibly pauses or resumes", "Start restores the initial state"]
+  },
+  "orbital-courier": {
+    "title": "Orbital Courier",
+    "rom": "orbital_courier.wsc",
+    "goal": "Collect the parcel and reach the depot before forty valid moves expire.",
+    "controls": {"left": "move left", "right": "move right", "up": "move up", "down": "move down", "a": "restart after a result"},
+    "required_checks": ["walls block movement", "parcel can be collected", "depot delivery can win", "fuel exhaustion can lose", "A restarts a result"]
+  },
+  "scrapframe-garage": {
+    "title": "Scrapframe Garage",
+    "rom": "scrapframe_garage.wsc",
+    "goal": "Repair three machines by selecting and installing the correct part for each job.",
+    "controls": {"left": "previous part", "right": "next part", "a": "install or advance"},
+    "required_checks": ["part selection changes", "install produces feedback", "three jobs can finish", "score is visible", "completed shift can restart"]
+  },
+  "radio-ghost": {
+    "title": "Radio Ghost",
+    "rom": "radio_ghost.wsc",
+    "goal": "Tune and lock three hidden signals before dawn while maintaining enough gain.",
+    "controls": {"left": "tune down", "right": "tune up", "up": "gain up", "down": "gain down", "a": "lock signal", "b": "toggle gate"},
+    "required_checks": ["frequency changes", "gain changes", "gate changes", "good locks advance clues", "success and dawn endings can restart"]
+  },
+  "harpoon-moon": {
+    "title": "Harpoon Moon",
+    "rom": "harpoon_moon.wsc",
+    "goal": "Tag three small creatures and defeat the final leviathan before oxygen expires.",
+    "controls": {"left": "move left", "right": "move right", "up": "move up", "down": "move down", "a": "hold to charge and release to fire", "b": "hold to lure"},
+    "required_checks": ["movement works", "A charges while held", "releasing A fires", "B changes lure behavior", "victory and oxygen failure can restart"]
+  },
+  "turncoat-tactics": {
+    "title": "Turncoat Tactics",
+    "rom": "turncoat_tactics.wsc",
+    "goal": "Move, attack or recruit, and capture the eastern beacon within eighteen turns.",
+    "controls": {"left": "cursor left", "right": "cursor right", "up": "cursor up", "down": "cursor down", "a": "select or act", "b": "recruit adjacent weakened enemy", "start": "end turn"},
+    "required_checks": ["cursor reaches all board edges", "selection and movement work", "attacks reduce health", "recruitment changes team", "turn end advances enemies", "win and loss can restart"]
+  },
+  "pocket-kaiju-observatory": {
+    "title": "Pocket Kaiju Observatory",
+    "rom": "pocket_kaiju_observatory.wsc",
+    "goal": "Photograph all three behaviors at safe distances before disturbance or sunset ends the expedition.",
+    "controls": {"left": "camera left", "right": "camera right", "up": "camera up", "down": "camera down", "a": "photograph", "b": "hold to hide", "start": "toggle zoom"},
+    "required_checks": ["camera moves", "zoom changes framing", "good photos add evidence", "bad photos add disturbance", "hiding reduces disturbance", "result can restart"]
+  },
+  "rotate-dungeon": {
+    "title": "Rotate Dungeon",
+    "rom": "rotate_dungeon.wsc",
+    "goal": "Rotate each room, collect its key, and reach the exit through five rooms.",
+    "controls": {"left": "move left", "right": "move right", "up": "move up", "down": "move down", "start": "rotate room", "b": "reset current room"},
+    "required_checks": ["walls block movement", "Start changes geometry", "key can be collected", "exit advances the room", "five rooms can finish", "B resets"]
+  },
+  "one-last-lap": {
+    "title": "One Last Lap",
+    "rom": "one_last_lap.wsc",
+    "goal": "Complete three laps while managing lanes, speed and battery; optionally tow the stranded rival.",
+    "controls": {"left": "lane left", "right": "lane right", "up": "lane up", "down": "lane down", "a": "hold to accelerate", "b": "hold to brake", "start": "tow when nearby"},
+    "required_checks": ["lane changes work", "A increases speed", "B reduces speed", "hazards and rivals affect play", "tow choice changes ending", "battery failure can restart"]
+  },
+  "bug-witch": {
+    "title": "Bug Witch",
+    "rom": "bug_witch.wsc",
+    "goal": "Place logic familiars and solve five circuits with the required output, mix and budget.",
+    "controls": {"left": "previous socket", "right": "next socket", "up": "next familiar", "down": "previous familiar", "a": "place familiar", "b": "clear socket", "start": "run circuit"},
+    "required_checks": ["cursor moves through five sockets", "familiar selection changes", "place and clear work", "invalid circuit remains editable", "valid circuit advances", "five puzzles can restart"]
+  }
+}

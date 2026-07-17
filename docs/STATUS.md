@@ -10,7 +10,7 @@ release gate.
 | Game invariants | UI bounds, courier routes, radio timing, dungeon rooms, and all circuit puzzles are verified |
 | Gameplay paths | All ten games have deterministic utility, success, failure/retry, completion, or reset-path coverage as applicable |
 | Native art | All ten cartridges have complete full-screen graphical renderers derived from hash-linked Imagegen masters, exact four-color palettes, and checked-in 2BPP tile banks |
-| Emulator boot | Every ROM reaches a captured nonblank Mednafen gameplay frame with its icon HUD and dominant playfield visible |
+| SwanSong boot | Every ROM reaches a captured native SwanSong gameplay frame with its icon HUD and dominant playfield visible |
 | Audio | Original wavetable sequences and feedback calls compile; physical listening remains device-dependent QA |
 | Saves | Intentionally absent: every v1 game is a short replayable session |
 | Orientation | Logical state and LCD icon path are implemented for Rotate Dungeon |

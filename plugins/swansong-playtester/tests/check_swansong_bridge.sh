@@ -1,0 +1,39 @@
+#!/bin/sh
+set -eu
+
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+PLUGIN_DIR=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd)
+REPO_DIR=$(CDPATH= cd -- "$PLUGIN_DIR/../.." && pwd)
+
+if [ -n "${SWANSONG_DESKTOP_DIR:-}" ]; then
+    SWANSONG_ROOT=$SWANSONG_DESKTOP_DIR
+elif [ -x "$REPO_DIR/../GitHub/SwanSong-Desktop/Scripts/check-playtest-mcp-server.sh" ]; then
+    SWANSONG_ROOT=$(CDPATH= cd -- "$REPO_DIR/../GitHub/SwanSong-Desktop" && pwd)
+elif [ -n "${HOME:-}" ] \
+    && [ -x "$HOME/Documents/GitHub/SwanSong-Desktop/Scripts/check-playtest-mcp-server.sh" ]; then
+    SWANSONG_ROOT=$(CDPATH= cd -- "$HOME/Documents/GitHub/SwanSong-Desktop" && pwd)
+else
+    SWANSONG_ROOT=""
+fi
+
+CHECK=${SWANSONG_ROOT:+$SWANSONG_ROOT/Scripts/check-playtest-mcp-server.sh}
+if [ -z "$CHECK" ] || [ ! -x "$CHECK" ]; then
+    echo "SwanSong Desktop was not found. Set SWANSONG_DESKTOP_DIR to its checkout." >&2
+    exit 2
+fi
+
+"$CHECK"
+python3 - "$PLUGIN_DIR/scripts/games.json" <<'PY'
+import json
+import pathlib
+import sys
+
+games = json.loads(pathlib.Path(sys.argv[1]).read_text())
+assert len(games) == 10
+required = {"title", "rom", "goal", "controls", "required_checks"}
+for slug, game in games.items():
+    assert required <= game.keys(), slug
+    assert game["controls"], slug
+print("PASS SwanSong playtester manifest describes ten game contracts")
+PY
+python3 "$PLUGIN_DIR/tests/test_live_mcp.py"

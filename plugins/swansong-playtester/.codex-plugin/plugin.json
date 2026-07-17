@@ -1,0 +1,30 @@
+{
+  "name": "swansong-playtester",
+  "version": "0.1.0",
+  "description": "Play and evaluate SwanSong Originals ROMs through SwanSong's deterministic MCP tools.",
+  "author": {
+    "name": "Regionally Famous",
+    "url": "https://github.com/RegionallyFamous"
+  },
+  "homepage": "https://github.com/RegionallyFamous/SwanSong-Originals/tree/main/plugins/swansong-playtester",
+  "repository": "https://github.com/RegionallyFamous/SwanSong-Originals",
+  "license": "MIT",
+  "keywords": ["wonderswan", "homebrew", "playtesting", "mcp", "swansong"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "SwanSong Playtester",
+    "shortDescription": "Let Codex play real SwanSong ROMs and report reproducible failures.",
+    "longDescription": "Boots built WonderSwan Color cartridges through SwanSong's own deterministic engine and MCP server. Codex can inspect native screenshots, listen to the final audio window, apply exact-frame controls, replay plans deterministically, and produce evidence-backed playtest reports.",
+    "developerName": "Regionally Famous",
+    "category": "Developer Tools",
+    "capabilities": ["Interactive", "Read", "Local execution"],
+    "websiteURL": "https://github.com/RegionallyFamous/SwanSong-Originals",
+    "defaultPrompt": [
+      "Play one SwanSong game and report whether its main loop works.",
+      "Run a smoke playtest across all ten games.",
+      "Reproduce this gameplay bug with screenshots and an input trace."
+    ],
+    "brandColor": "#FF6B9D"
+  },
+  "mcpServers": "./.mcp.json"
+}
