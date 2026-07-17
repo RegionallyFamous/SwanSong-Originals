@@ -12,9 +12,11 @@ jobs:
       image: cbrzeszczot/wonderful@sha256:1bd074214c0592a5fca3f26ce0c47d3a809f48e83f68705189fe30c78e75435e
     steps:
       - uses: actions/checkout@v6
+        with:
+          submodules: recursive
       - name: Install verifier runtime
         run: |
           apt-get update
-          apt-get install --yes --no-install-recommends python3
+          apt-get install --yes --no-install-recommends build-essential python3
       - name: Build and verify all ROMs
         run: make clean test WONDERFUL_TOOLCHAIN=/opt/wonderful

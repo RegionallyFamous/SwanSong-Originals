@@ -1,0 +1,95 @@
+schema_version = 1
+
+[game]
+id = "rotate-dungeon"
+title = "Rotate Dungeon"
+version = "1.0.0"
+template = "arcade-action"
+hardware = "color-required"
+orientation = "horizontal"
+initial_scene = "intro"
+
+[cartridge]
+publisher_id = 0
+game_id = 8
+version = 1
+save_type = "none"
+save_bytes = 0
+rtc = false
+
+[controls.actions]
+left = ["X4", "Y1"]
+right = ["X2", "Y3"]
+up = ["X3", "Y2"]
+down = ["X1", "Y4"]
+rotate_room = ["START"]
+reset_room = ["B"]
+replay = ["A"]
+
+[budgets]
+rom_bytes = 262144
+work_ram_bytes = 16384
+vram_tiles = 512
+palettes = 16
+sprites = 128
+sprites_per_scanline = 32
+audio_bytes = 8192
+
+[resources]
+work_ram_bytes = 8192
+sprites = 0
+sprites_per_scanline = 0
+
+[[scenes]]
+id = "intro"
+[[scenes]]
+id = "room"
+[[scenes]]
+id = "result"
+
+[[play.scenarios]]
+id = "neutral"
+title = "Neutral boot"
+goal = "Reach the stable dungeon room from a fresh boot."
+plan = "tests/play/neutral.json"
+required_checks = ["room, key, and exit are visible", "player is visible", "no crash or hang"]
+
+[[play.scenarios]]
+id = "interaction"
+title = "Rotation controls"
+goal = "Move, rotate the room, and reset its state."
+plan = "tests/play/interaction.json"
+required_checks = ["movement works", "rotation changes geometry", "orientation icon changes", "reset restores room"]
+audio = true
+
+[[play.scenarios]]
+id = "success"
+title = "First key utility"
+goal = "Rotate the room, navigate its open path, and collect the key."
+plan = "tests/play/success.json"
+required_checks = ["orientation changes", "rotated path permits movement", "key is collected"]
+audio = true
+
+[[play.scenarios]]
+id = "failure"
+title = "Dungeon wall boundary"
+goal = "Attempt movement through two blocked room edges."
+plan = "tests/play/failure.json"
+required_checks = ["player remains in place", "blocked movement produces feedback", "room remains playable"]
+audio = true
+
+[[play.scenarios]]
+id = "reset"
+title = "Room reset"
+goal = "Collect the key and reset the room."
+plan = "tests/play/reset.json"
+required_checks = ["key is first collected", "reset returns the player to the entrance", "orientation and key return to defaults"]
+audio = true
+
+[[play.scenarios]]
+id = "deterministic"
+title = "Deterministic rotation replay"
+goal = "Replay the first-key route from a fresh boot."
+plan = "tests/play/deterministic.json"
+required_checks = ["orientation, player, and key state match the success path", "frame and WAV evidence match on repeated execution"]
+audio = true

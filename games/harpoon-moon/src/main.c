@@ -1,79 +1,64 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "rf_swan.h"
+#include <swan/swan.h>
+
+#include "swan_controls.h"
+#include "swan_game_runtime.h"
+#include "swan_project.h"
 #include "gfx.h"
+#include "model.h"
 
-void main(void) {
-	uint8_t skiff = 3;
-	uint8_t creature = 16;
-	uint8_t tags = 0;
-	uint8_t boss_hp = 3;
-	uint8_t charge = 0;
-	uint8_t result = 0;
-	uint16_t oxygen = 1200;
-	bool dirty = true;
-	uint8_t intro;
+static harpoon_state_t state;
 
-	rf_init(false);
-	gfx_show_intro();
-	for (intro = 0; intro < 36; ++intro) {
-		rf_frame();
-		if (rf_input()->pressed) break;
+void swan_game_boot(void) {
+	harpoon_reset(&state);
+	swan_game_audio_init();
+}
+
+void swan_scene_enter(swan_scene_id_t scene, uint16_t argument) {
+	(void)argument;
+	if (scene == SWAN_SCENE_HUNT) {
+		gfx_init();
+		swan_core_reset_session();
 	}
-	gfx_init();
-	while (1) {
-		const rf_input_t *input;
-		int8_t dx;
-		rf_frame();
-		input = rf_input();
+	swan_core_invalidate();
+}
 
-		if (result && (input->pressed & WS_KEY_A)) {
-			skiff = 3; creature = 16; tags = 0; boss_hp = 3;
-			charge = 0; result = 0; oxygen = 1200; dirty = true;
-		}
-		if (!result) {
-			dx = rf_dx(input->pressed);
-			if (dx) {
-				skiff = rf_clamp_u8((int16_t)skiff + dx, 0, 20);
-				dirty = true;
-			}
-			if ((input->held & WS_KEY_A) && charge < 20) {
-				++charge;
-				dirty = true;
-			}
-			if ((input->held & WS_KEY_B) && (rf_frame_count() & 3) == 0) {
-				if (creature < skiff) ++creature;
-				else if (creature > skiff) --creature;
-				dirty = true;
-			}
-			if ((input->released & WS_KEY_A) && charge) {
-				uint8_t distance = skiff > creature ? skiff - creature : creature - skiff;
-				uint8_t reach = (uint8_t)(charge / 2 + 2);
-				if (distance <= reach) {
-					if (tags < 3) ++tags;
-					else if (boss_hp) --boss_hp;
-					creature = (uint8_t)(4 + rf_random() % 16);
-					rf_beep(620, 10);
-				} else {
-					oxygen = oxygen > 75 ? oxygen - 75 : 0;
-					rf_beep(120, 8);
-				}
-				charge = 0;
-				dirty = true;
-			}
-			if ((rf_frame_count() % 45) == 0) {
-				int8_t drift = (rf_random() & 1) ? 1 : -1;
-				creature = rf_clamp_u8((int16_t)creature + drift, 1, 20);
-				dirty = true;
-			}
-			if (oxygen) --oxygen;
-			if (tags == 3 && boss_hp == 0) result = 1;
-			else if (oxygen == 0) result = 2;
-		}
-		if (dirty || (rf_frame_count() & 7) == 0) {
-			gfx_render(skiff, creature, oxygen, tags, boss_hp, charge, result);
-			dirty = false;
-		}
+void swan_scene_update(swan_scene_id_t scene, const swan_frame_t *frame) {
+	harpoon_input_t model_input = {0};
+	harpoon_event_t event;
+
+	if (scene == SWAN_SCENE_INTRO) {
+		if (swan_game_intro_complete(frame))
+			(void)swan_core_request_scene(SWAN_SCENE_HUNT, 0);
+		return;
 	}
+
+	model_input.direction = swan_game_primary_axis(frame->input->pressed);
+	model_input.charge_held = SWAN_GAME_ACTION_HELD(frame->input, SWAN_ACTION_CHARGE_FIRE);
+	model_input.lure_held = SWAN_GAME_ACTION_HELD(frame->input, SWAN_ACTION_LURE);
+	model_input.fire_released = SWAN_GAME_ACTION_RELEASED(frame->input, SWAN_ACTION_CHARGE_FIRE);
+	model_input.replay = SWAN_GAME_ACTION_PRESSED(frame->input, SWAN_ACTION_CHARGE_FIRE);
+	harpoon_step(&state, &model_input, frame->session_tick, &event);
+	if (event.tone_frames)
+		swan_game_audio_beep(event.tone_hz, event.tone_frames);
+	if (event.dirty || (frame->session_tick & 7u) == 0) swan_core_invalidate();
+	if (event.reset_session)
+		(void)swan_core_request_scene(SWAN_SCENE_HUNT, 0);
+	else if (scene == SWAN_SCENE_HUNT && state.result != HARPOON_RESULT_PLAYING)
+		(void)swan_core_request_scene(SWAN_SCENE_RESULT, 0);
+}
+
+void swan_scene_render(swan_scene_id_t scene) {
+	if (scene == SWAN_SCENE_INTRO) {
+		gfx_show_intro();
+		return;
+	}
+	gfx_render(state.skiff, state.creature, state.oxygen, state.tags,
+		state.boss_hp, state.charge, (uint8_t)state.result);
+}
+
+void swan_scene_exit(swan_scene_id_t scene) {
+	(void)scene;
 }

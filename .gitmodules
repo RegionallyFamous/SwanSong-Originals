@@ -1,0 +1,3 @@
+[submodule "vendor/swansong-sdk"]
+	path = vendor/swansong-sdk
+	url = https://github.com/RegionallyFamous/swansong-sdk.git

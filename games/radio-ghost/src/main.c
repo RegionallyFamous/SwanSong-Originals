@@ -1,77 +1,67 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "rf_swan.h"
+#include <swan/swan.h>
+
+#include "swan_controls.h"
+#include "swan_game_runtime.h"
+#include "swan_project.h"
 #include "gfx.h"
+#include "model.h"
 
-#define FRAME_RATE 75
-#define NIGHT_FRAMES 4500
+static radio_state_t state;
 
-static uint16_t target_for(uint8_t clue) {
-	if (clue == 0) return 934;
-	if (clue == 1) return 995;
-	return 1042;
+void swan_game_boot(void) {
+	radio_reset(&state);
+	swan_game_audio_init();
 }
 
-void main(void) {
-	uint16_t frequency = 880;
-	uint16_t time = NIGHT_FRAMES;
-	uint8_t gain = 5;
-	uint8_t clue = 0;
-	uint8_t result = 0;
-	bool gate = false;
-	bool dirty = true;
-	uint8_t intro;
-
-	rf_init(false);
-	gfx_show_intro();
-	for (intro = 0; intro < 36; ++intro) {
-		rf_frame();
-		if (rf_input()->pressed) break;
+void swan_scene_enter(swan_scene_id_t scene, uint16_t argument) {
+	(void)argument;
+	if (scene == SWAN_SCENE_TUNING) {
+		gfx_init();
+		swan_core_reset_session();
 	}
-	gfx_init();
-	while (1) {
-		const rf_input_t *input;
-		int8_t dx;
-		int8_t dy;
-		rf_frame();
-		input = rf_input();
-		dx = rf_dx((rf_frame_count() % 3) == 0 ? input->held : input->pressed);
-		dy = rf_dy((rf_frame_count() % 3) == 0 ? input->held : input->pressed);
+	swan_core_invalidate();
+}
 
-		if (result && (input->pressed & WS_KEY_A)) {
-			frequency = 880; time = NIGHT_FRAMES; gain = 5; clue = 0; result = 0; gate = false;
-			dirty = true;
-		}
-		if (!result) {
-			if (dx) {
-				frequency = (uint16_t)rf_clamp_u8((int16_t)((frequency - 880) / 2) + dx, 0, 100) * 2 + 880;
-				dirty = true;
-			}
-			if (dy) {
-				gain = rf_clamp_u8((int16_t)gain - dy, 0, 9);
-				dirty = true;
-			}
-			if (input->pressed & WS_KEY_B) { gate = !gate; dirty = true; }
-			if (input->pressed & WS_KEY_A) {
-				uint16_t target = target_for(clue);
-				uint16_t distance = frequency > target ? frequency - target : target - frequency;
-				if (distance <= 3 && gain >= 3) {
-					++clue;
-					rf_beep((uint16_t)(440 + clue * 80), 12);
-					if (clue == 3) result = 1;
-				} else {
-					time = time > 300 ? time - 300 : 0;
-					rf_beep(110, 8);
-				}
-				dirty = true;
-			}
-			if (time) --time;
-			else result = 2;
-		}
-		if (dirty || (rf_frame_count() & 7) == 0) {
-			gfx_render(frequency, gain, time, clue, result, gate);
-			dirty = false;
-		}
+void swan_scene_update(swan_scene_id_t scene, const swan_frame_t *frame) {
+	radio_input_t model_input = {0};
+	radio_event_t event;
+	uint16_t directional;
+
+	if (scene == SWAN_SCENE_INTRO) {
+		if (swan_game_intro_complete(frame))
+			(void)swan_core_request_scene(SWAN_SCENE_TUNING, 0);
+		return;
 	}
+
+	directional = frame->session_tick % 3u == 0 ?
+		frame->input->held : frame->input->pressed;
+	model_input.frequency_direction = swan_input_dx(directional);
+	model_input.gain_direction = swan_input_dy(directional);
+	model_input.lock = SWAN_GAME_ACTION_PRESSED(frame->input, SWAN_ACTION_LOCK_SIGNAL);
+	model_input.toggle_gate = SWAN_GAME_ACTION_PRESSED(frame->input, SWAN_ACTION_TOGGLE_GATE);
+	model_input.replay = model_input.lock;
+	radio_step(&state, &model_input, &event);
+	if (event.tone_frames)
+		swan_game_audio_beep(110, event.tone_frames ? event.tone_frames : 8);
+	if (event.dirty || (frame->session_tick & 7u) == 0) swan_core_invalidate();
+	if (event.reset_session)
+		(void)swan_core_request_scene(SWAN_SCENE_TUNING, 0);
+	else if (scene == SWAN_SCENE_TUNING && state.result != RADIO_RESULT_PLAYING)
+		(void)swan_core_request_scene(SWAN_SCENE_RESULT, 0);
+}
+
+void swan_scene_render(swan_scene_id_t scene) {
+	if (scene == SWAN_SCENE_INTRO) {
+		gfx_show_intro();
+		return;
+	}
+	gfx_render(state.frequency, state.gain, state.time, state.clue,
+		(uint8_t)state.result, state.gate);
+}
+
+void swan_scene_exit(swan_scene_id_t scene) {
+	(void)scene;
 }

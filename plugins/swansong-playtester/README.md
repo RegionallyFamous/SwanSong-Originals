@@ -9,6 +9,12 @@ The key quality rule is simple: a successful build or boot is not a gameplay
 pass. The agent must inspect the screen, choose an input from the visible state,
 observe the result, and exercise the game-specific checks in `scripts/games.json`.
 
+Each game manifest supplies six fresh-boot plans: neutral, interaction,
+success/utility, failure/boundary, reset/replay, and deterministic replay.
+Ordinary physical-button presses last one frame with two neutral drain frames;
+holds are reserved for continuous game mechanics. The deterministic plan
+reuses the success/utility input history unchanged.
+
 ## Local Codex setup
 
 From the repository root:
@@ -47,3 +53,5 @@ action replays the whole history from a fresh SwanSong boot. That makes a
 reported bug reproducible and avoids depending on GUI focus or a long-running
 player process. Captures are evidence, not automatically a pass: the agent is
 responsible for comparing the visible result with the game contract.
+Scenarios marked `audio = true` additionally require an inspected WAV
+observation; hash movement alone is not an audio verdict.

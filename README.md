@@ -61,6 +61,7 @@ gameplay pass.
 
 - Wonderful Toolchain installed at `/opt/wonderful`, or set
   `WONDERFUL_TOOLCHAIN` to another installation;
+- Git submodules initialized with `git submodule update --init`;
 - GNU Make;
 - Python 3 for verification; and
 - SwanSong Desktop for the rendered-frame smoke and agent playtest lanes.
@@ -74,10 +75,18 @@ make -C games/radio-ghost
 Locally and continuously validated package revisions are recorded in
 [toolchain.lock](toolchain.lock).
 
+The [SwanSong SDK integration](docs/SDK-INTEGRATION.md) records the ten
+schema-v1 game manifests, deterministic play contracts, resource budgets, and
+migration lessons. Release builds use the pinned `vendor/swansong-sdk` v0.1.0
+submodule. `SWANSONG_SDK_DIR` can still select another SDK checkout for local
+compatibility testing.
+
 ## Repository map
 
-- `engine/` — shared input, full-screen tile rendering, native palettes, VBlank,
-  PRNG, orientation state, and wavetable feedback audio;
+- `vendor/swansong-sdk/` — pinned SDK runtime, generator, and SwanSong tooling;
+- `shared/` — small anthology-side SDK adapters for approved legacy tile art,
+  intro upload, semantic input helpers, and feedback audio;
+- `engine/` — retained pre-SDK engine source for migration reference only;
 - `games/` — ten independent cartridge projects;
 - `mk/` — common Wonderful build rules;
 - `tools/` — ROM, UI, gameplay-path, and SwanSong execution checks;

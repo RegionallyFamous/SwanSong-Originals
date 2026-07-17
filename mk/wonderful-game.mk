@@ -1,45 +1,74 @@
 WONDERFUL_TOOLCHAIN ?= /opt/wonderful
+SWANSONG_SDK_DIR ?= $(abspath ../../vendor/swansong-sdk)
+SWAN ?= env PYTHONPATH=$(SWANSONG_SDK_DIR)/python python3 -m swansong_sdk.cli
+SWAN_GFX_HARDWARE_TILE_CAPACITY ?= $(shell $(SWAN) hardware-tile-capacity --project swan.toml)
 TARGET := wswan/medium
 include $(WONDERFUL_TOOLCHAIN)/target/$(TARGET)/makedefs.mk
 
-INCLUDEDIRS := include ../../engine/include
-SOURCEDIRS := src
-LIBS := -lwse -lwsx -lws
+INCLUDEDIRS := include src ../../shared build/generated/include $(SWANSONG_SDK_DIR)/include
 LIBDIRS := $(WF_ARCH_LIBDIRS)
-BUILDDIR := build
+BUILDDIR := build/obj
 ELF := build/$(NAME).elf
 ELF_STAGE1 := build/$(NAME)_stage1.elf
 ROM := $(NAME).wsc
-ENGINE_LIB := ../../engine/build/librf_swan.a
-ENGINE_INPUTS := $(shell find -L ../../engine/include ../../engine/src -type f) ../../engine/Makefile
-
-SOURCES_C := $(shell find -L $(SOURCEDIRS) -name "*.c")
-OBJS := $(addsuffix .o,$(addprefix $(BUILDDIR)/,$(SOURCES_C)))
+SWANSONG_RUNTIME_BUILD := $(abspath build/swansong-sdk-$(SWAN_GFX_HARDWARE_TILE_CAPACITY))
+SWANSONG_RUNTIME := $(SWANSONG_RUNTIME_BUILD)/$(TARGET)/libswan.a
+GENERATED_STAMP := build/generated/.stamp
+GENERATED_SOURCES_C := build/generated/src/swan_assets.c build/generated/src/swan_config.c
+GAME_SOURCES_C := $(wildcard src/*.c)
+SHARED_SOURCES_C := ../../shared/swan_game_runtime.c
+GAME_OBJS := $(addprefix $(BUILDDIR)/,$(addsuffix .o,$(GAME_SOURCES_C) $(GENERATED_SOURCES_C)))
+SHARED_OBJS := $(BUILDDIR)/shared/swan_game_runtime.c.o
+OBJS := $(GAME_OBJS) $(SHARED_OBJS)
 DEPS := $(OBJS:.o=.d)
+ASSET_INPUTS := swan.toml $(shell find tests/play -type f 2>/dev/null)
+SDK_TOOL_INPUTS := $(shell find -L $(SWANSONG_SDK_DIR)/python/swansong_sdk -type f)
+SDK_RUNTIME_INPUTS := $(shell find -L $(SWANSONG_SDK_DIR)/include \
+	$(SWANSONG_SDK_DIR)/src -type f) $(SWANSONG_SDK_DIR)/mk/runtime-library.mk
 
 INCLUDEFLAGS := $(foreach path,$(INCLUDEDIRS),-I$(path)) \
 	$(foreach path,$(LIBDIRS),-isystem $(path)/include)
 LIBDIRSFLAGS := $(foreach path,$(LIBDIRS),-L$(path)/lib)
-CFLAGS += -std=gnu11 -Wall -Wextra -Werror $(WF_ARCH_CFLAGS) \
+CFLAGS += -std=gnu11 -Wall -Wextra -Werror \
+	-DSWAN_GFX_HARDWARE_TILE_CAPACITY=$(SWAN_GFX_HARDWARE_TILE_CAPACITY) $(WF_ARCH_CFLAGS) \
 	$(INCLUDEFLAGS) -ffunction-sections -fdata-sections -fno-common -O2
-LDFLAGS := -T$(WF_LDSCRIPT) $(LIBDIRSFLAGS) $(WF_ARCH_LDFLAGS) $(LIBS)
+LDFLAGS := -T$(WF_LDSCRIPT) $(LIBDIRSFLAGS) $(WF_ARCH_LDFLAGS) \
+	-Wl,--start-group -lwse -lwsx -lws -lc -Wl,--end-group
 
-.PHONY: all clean usage
+.PHONY: all assets clean sdk-runtime usage
 
-all: $(ROM) compile_commands.json
+all: assets $(ROM) compile_commands.json
 
-$(ENGINE_LIB): $(ENGINE_INPUTS)
-	$(MAKE) -C ../../engine
+assets: $(GENERATED_STAMP)
+
+$(GENERATED_STAMP): $(ASSET_INPUTS) $(SDK_TOOL_INPUTS)
+	$(SWAN) assets --project swan.toml
+	@touch $@
+
+$(GENERATED_SOURCES_C): $(GENERATED_STAMP)
+	@test -f $@
+
+sdk-runtime: $(SWANSONG_RUNTIME)
+
+$(SWANSONG_RUNTIME): $(SDK_RUNTIME_INPUTS)
+	$(MAKE) -C $(SWANSONG_SDK_DIR) -f mk/runtime-library.mk \
+		TARGET=$(TARGET) BUILD_ROOT=$(SWANSONG_RUNTIME_BUILD) \
+		SWAN_GFX_HARDWARE_TILE_CAPACITY=$(SWAN_GFX_HARDWARE_TILE_CAPACITY) all
 
 $(ROM) $(ELF): $(ELF_STAGE1) wfconfig.toml
 	@echo "  ROM     $@"
 	$(BUILDROM) -o $(ROM) --output-elf $(ELF) $<
 
-$(ELF_STAGE1): $(OBJS) $(ENGINE_LIB)
+$(ELF_STAGE1): $(OBJS) $(SWANSONG_RUNTIME)
+	@mkdir -p $(@D)
 	@echo "  LD      $@"
-	$(CC) -r -o $@ $(OBJS) $(ENGINE_LIB) $(WF_CRT0) $(LDFLAGS)
+	$(CC) -r -o $@ $(OBJS) $(SWANSONG_RUNTIME) $(WF_CRT0) $(LDFLAGS)
 
 $(BUILDDIR)/%.c.o: %.c
+	@mkdir -p $(@D)
+	$(CC) $(CFLAGS) -MMD -MP -MJ $(@:.o=.cc.json) -c -o $@ $<
+
+$(BUILDDIR)/shared/%.c.o: ../../shared/%.c
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -MMD -MP -MJ $(@:.o=.cc.json) -c -o $@ $<
 
@@ -51,5 +80,6 @@ usage: $(ELF)
 
 clean:
 	rm -rf $(ROM) $(BUILDDIR) compile_commands.json
+	rm -rf build/generated build/swansong-sdk-* build/$(NAME).elf build/$(NAME)_stage1.elf
 
 -include $(DEPS)

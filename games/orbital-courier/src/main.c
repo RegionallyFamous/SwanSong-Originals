@@ -1,70 +1,66 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "rf_swan.h"
-#include "gfx.h"
+#include <swan/swan.h>
 
-bool orbital_blocked(uint8_t x, uint8_t y) {
-	if (x == 0 || x == 19 || y == 0 || y == 8) return true;
-	if (y == 3 && x > 3 && x < 15 && x != 9) return true;
-	if (x == 12 && y > 3 && y < 8 && y != 6) return true;
-	return false;
+#include "swan_controls.h"
+#include "swan_game_runtime.h"
+#include "swan_project.h"
+#include "gfx.h"
+#include "model.h"
+
+static courier_state_t state;
+
+void swan_game_boot(void) {
+	courier_reset(&state);
+	swan_game_audio_init();
 }
 
-void main(void) {
-	uint8_t px = 2;
-	uint8_t py = 1;
-	uint8_t fuel = 40;
-	uint8_t steps = 0;
-	uint8_t result = 0;
-	bool parcel = false;
-	bool dirty = true;
-
-	rf_init(false);
-	orbital_gfx_show_intro();
-	for (steps = 0; steps < 36; ++steps) {
-		rf_frame();
-		if (rf_input()->pressed) break;
+void swan_scene_enter(swan_scene_id_t scene, uint16_t argument) {
+	(void)argument;
+	if (scene == SWAN_SCENE_DELIVERY) {
+		orbital_gfx_init();
+		swan_core_reset_session();
 	}
-	steps = 0;
-	orbital_gfx_init();
-	while (1) {
-		const rf_input_t *input;
-		int8_t dx;
-		int8_t dy;
-		rf_frame();
-		input = rf_input();
+	swan_core_invalidate();
+}
 
-		if (result && (input->pressed & WS_KEY_A)) {
-			px = 2; py = 1; fuel = 40; steps = 0; result = 0; parcel = false;
-			dirty = true;
-		}
-		if (!result) {
-			dx = rf_dx(input->pressed);
-			dy = rf_dy(input->pressed);
-			if (dx || dy) {
-				uint8_t nx = (uint8_t)(px + dx);
-				uint8_t ny = (uint8_t)(py + dy);
-				if (!orbital_blocked(nx, ny)) {
-					px = nx; py = ny; ++steps;
-					if (fuel) --fuel;
-					rf_beep(330, 2);
-				} else {
-					rf_beep(120, 4);
-				}
-				if (px == 3 && py == 7) parcel = true;
-				if (parcel && px == 17 && py == 1) {
-					result = 1;
-					rf_beep(660, 12);
-				} else if (fuel == 0) {
-					result = 2;
-				}
-				dirty = true;
-			}
-		}
-		if (dirty) {
-			orbital_gfx_render(px, py, parcel, fuel, steps, result);
-			dirty = false;
-		}
+void swan_scene_update(swan_scene_id_t scene, const swan_frame_t *frame) {
+	courier_input_t model_input = {0};
+	courier_event_t event;
+
+	if (scene == SWAN_SCENE_INTRO) {
+		if (swan_game_intro_complete(frame))
+			(void)swan_core_request_scene(SWAN_SCENE_DELIVERY, 0);
+		return;
 	}
+	if (scene == SWAN_SCENE_RESULT) {
+		if (SWAN_GAME_ACTION_PRESSED(frame->input, SWAN_ACTION_REPLAY)) {
+			courier_reset(&state);
+			(void)swan_core_request_scene(SWAN_SCENE_DELIVERY, 0);
+		}
+		return;
+	}
+
+	model_input.dx = swan_input_dx(frame->input->pressed);
+	model_input.dy = swan_input_dy(frame->input->pressed);
+	courier_step(&state, &model_input, &event);
+	if (event.tone_frames)
+		swan_game_audio_beep(event.tone_hz, event.tone_frames);
+	if (event.dirty) swan_core_invalidate();
+	if (state.result != COURIER_RESULT_PLAYING)
+		(void)swan_core_request_scene(SWAN_SCENE_RESULT, 0);
+}
+
+void swan_scene_render(swan_scene_id_t scene) {
+	if (scene == SWAN_SCENE_INTRO) {
+		orbital_gfx_show_intro();
+		return;
+	}
+	orbital_gfx_render(state.x, state.y, state.parcel, state.fuel,
+		state.steps, (uint8_t)state.result);
+}
+
+void swan_scene_exit(swan_scene_id_t scene) {
+	(void)scene;
 }

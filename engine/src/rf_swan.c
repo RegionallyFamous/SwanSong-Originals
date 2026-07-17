@@ -11,7 +11,7 @@ WSE_RESERVE_TILES(512, 0);
 
 static rf_input_t input_state;
 static uint16_t frame_counter;
-static uint16_t random_state = 0x71D3;
+static uint16_t random_state = RF_DEFAULT_RANDOM_SEED;
 static uint8_t tone_frames;
 static uint8_t text_x;
 static uint8_t text_y;
@@ -129,6 +129,17 @@ static void init_sound(void) {
 
 void rf_init(bool vertical) {
 	memset(&input_state, 0, sizeof(input_state));
+	frame_counter = 0;
+	random_state = RF_DEFAULT_RANDOM_SEED;
+	tone_frames = 0;
+	text_x = 0;
+	text_y = 0;
+	playfield_mode = false;
+	active_art_map = 0;
+	active_art_width = 0;
+	active_art_height = 0;
+	active_art_x = 0;
+	active_art_y = 0;
 	color_active = ws_system_set_mode(WS_MODE_COLOR);
 	wsx_console_init_default(&wse_screen1);
 	ws_display_set_screen_addresses(&wse_screen1, &wse_screen2);
@@ -149,6 +160,19 @@ void rf_init(bool vertical) {
 	ia16_enable_irq();
 	init_sound();
 	rf_clear();
+}
+
+void rf_session_begin(uint16_t random_seed) {
+	/* A press that skips an intro or restarts a result must not leak into play. */
+	while (input_state.held) rf_frame();
+	memset(&input_state, 0, sizeof(input_state));
+	frame_counter = 0;
+	random_state = random_seed ? random_seed : RF_DEFAULT_RANDOM_SEED;
+	tone_frames = 0;
+	text_x = 0;
+	text_y = 0;
+	playfield_mode = false;
+	rf_sound_off();
 }
 
 void rf_set_orientation(bool vertical) {
@@ -306,6 +330,11 @@ int8_t rf_dy(uint16_t keys) {
 	if (keys & (WS_KEY_X1 | WS_KEY_Y2)) --value;
 	if (keys & (WS_KEY_X3 | WS_KEY_Y4)) ++value;
 	return value;
+}
+
+int8_t rf_primary_axis(uint16_t keys) {
+	int8_t value = rf_dx(keys);
+	return value ? value : rf_dy(keys);
 }
 
 bool rf_pressed_any_direction(void) {
