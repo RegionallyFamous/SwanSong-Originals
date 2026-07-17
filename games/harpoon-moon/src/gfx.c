@@ -1,9 +1,11 @@
-#include "rf_swan.h"
+#include <swan/legacy.h>
+
+#include "swan_game_runtime.h"
 #include "gfx.h"
 #include "gameplay_art.h"
 
 void gfx_show_intro(void) {
-	rf_gfx_show_intro(game_intro_tiles, sizeof(game_intro_tiles),
+	swan_game_gfx_show_intro(game_intro_tiles, sizeof(game_intro_tiles),
 		game_intro_map, game_palette);
 }
 

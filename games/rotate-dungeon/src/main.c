@@ -1,80 +1,66 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "rf_swan.h"
-#include "gfx.h"
+#include <swan/swan.h>
 
-bool rotate_blocked(uint8_t room, bool vertical, uint8_t x, uint8_t y) {
-	uint8_t gap;
-	if (x == 0 || x == 11 || y == 0 || y == 7) return true;
-	if (!vertical) {
-		gap = (uint8_t)(1 + room % 6);
-		return x == (uint8_t)(3 + room % 5) && y != gap;
-	}
-	gap = (uint8_t)(1 + (room * 2) % 10);
-	return y == (uint8_t)(2 + room % 4) && x != gap;
+#include "swan_controls.h"
+#include "swan_game_runtime.h"
+#include "swan_project.h"
+#include "gfx.h"
+#include "model.h"
+
+static rotate_state_t state;
+
+void swan_game_boot(void) {
+	rotate_reset(&state);
+	swan_game_audio_init();
 }
 
-uint8_t rotate_key_x(uint8_t room) { return (uint8_t)(2 + room); }
-uint8_t rotate_key_y(uint8_t room) { return (uint8_t)(6 - (room & 1)); }
-
-void main(void) {
-	uint8_t room = 0;
-	uint8_t px = 1;
-	uint8_t py = 1;
-	uint8_t result = 0;
-	bool vertical = false;
-	bool key = false;
-	bool dirty = true;
-	uint8_t intro;
-
-	rf_init(false);
-	gfx_show_intro();
-	for (intro = 0; intro < 36; ++intro) {
-		rf_frame();
-		if (rf_input()->pressed) break;
+void swan_scene_enter(swan_scene_id_t scene, uint16_t argument) {
+	(void)argument;
+	if (scene == SWAN_SCENE_ROOM) {
+		gfx_init();
+		swan_core_set_vertical(state.vertical);
+		swan_core_reset_session();
 	}
-	gfx_init();
-	while (1) {
-		const rf_input_t *input;
-		rf_frame();
-		input = rf_input();
+	swan_core_invalidate();
+}
 
-		if (result && (input->pressed & WS_KEY_A)) {
-			room = 0; px = 1; py = 1; result = 0; vertical = false; key = false;
-			rf_set_orientation(false); dirty = true;
-		}
-		if (!result) {
-			int8_t dx = rf_dx(input->pressed);
-			int8_t dy = rf_dy(input->pressed);
-			if (input->pressed & WS_KEY_START) {
-				vertical = !vertical;
-				rf_set_orientation(vertical);
-				if (rotate_blocked(room, vertical, px, py)) { px = 1; py = 1; }
-				rf_beep(vertical ? 520 : 360, 6);
-				dirty = true;
-			}
-			if (input->pressed & WS_KEY_B) {
-				px = 1; py = 1; key = false; vertical = false;
-				rf_set_orientation(false); dirty = true;
-			}
-			if (dx || dy) {
-				uint8_t nx = (uint8_t)(px + dx);
-				uint8_t ny = (uint8_t)(py + dy);
-				if (!rotate_blocked(room, vertical, nx, ny)) { px = nx; py = ny; }
-				else rf_beep(100, 3);
-				dirty = true;
-			}
-			if (px == rotate_key_x(room) && py == rotate_key_y(room)) key = true;
-			if (key && px == 10 && py == 1) {
-				if (++room >= 5) result = 1;
-				else { px = 1; py = 1; key = false; }
-				dirty = true;
-			}
-		}
-		if (dirty) {
-			gfx_render(room < 5 ? room : 4, vertical, px, py, key, result);
-			dirty = false;
-		}
+void swan_scene_update(swan_scene_id_t scene, const swan_frame_t *frame) {
+	rotate_input_t model_input = {0};
+	rotate_event_t event;
+
+	if (scene == SWAN_SCENE_INTRO) {
+		if (swan_game_intro_complete(frame))
+			(void)swan_core_request_scene(SWAN_SCENE_ROOM, 0);
+		return;
 	}
+
+	model_input.dx = swan_input_dx(frame->input->pressed);
+	model_input.dy = swan_input_dy(frame->input->pressed);
+	model_input.rotate = SWAN_GAME_ACTION_PRESSED(frame->input, SWAN_ACTION_ROTATE_ROOM);
+	model_input.reset_room = SWAN_GAME_ACTION_PRESSED(frame->input, SWAN_ACTION_RESET_ROOM);
+	model_input.replay = SWAN_GAME_ACTION_PRESSED(frame->input, SWAN_ACTION_REPLAY);
+	rotate_step(&state, &model_input, &event);
+	if (event.orientation_changed) swan_core_set_vertical(event.vertical);
+	if (event.tone_frames)
+		swan_game_audio_beep(event.tone_hz, event.tone_frames);
+	if (event.dirty) swan_core_invalidate();
+	if (event.reset_session)
+		(void)swan_core_request_scene(SWAN_SCENE_ROOM, 0);
+	else if (scene == SWAN_SCENE_ROOM && state.result != ROTATE_RESULT_PLAYING)
+		(void)swan_core_request_scene(SWAN_SCENE_RESULT, 0);
+}
+
+void swan_scene_render(swan_scene_id_t scene) {
+	if (scene == SWAN_SCENE_INTRO) {
+		gfx_show_intro();
+		return;
+	}
+	gfx_render(state.room < 5 ? state.room : 4, state.vertical,
+		state.x, state.y, state.key, (uint8_t)state.result);
+}
+
+void swan_scene_exit(swan_scene_id_t scene) {
+	(void)scene;
 }

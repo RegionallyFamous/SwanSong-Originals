@@ -1,70 +1,64 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "rf_swan.h"
+#include <swan/swan.h>
+
+#include "swan_controls.h"
+#include "swan_game_runtime.h"
+#include "swan_project.h"
 #include "gfx.h"
+#include "model.h"
 
-void main(void) {
-	uint8_t camera = 2;
-	uint8_t kaiju = 15;
-	uint8_t behavior = 0;
-	uint8_t disturbance = 0;
-	uint8_t evidence = 0;
-	uint8_t result = 0;
-	uint16_t sun = 1800;
-	bool zoom = false;
-	bool dirty = true;
-	uint8_t intro;
+static kaiju_state_t state;
 
-	rf_init(false);
-	gfx_show_intro();
-	for (intro = 0; intro < 36; ++intro) {
-		rf_frame();
-		if (rf_input()->pressed) break;
+void swan_game_boot(void) {
+	kaiju_reset(&state);
+	swan_game_audio_init();
+}
+
+void swan_scene_enter(swan_scene_id_t scene, uint16_t argument) {
+	(void)argument;
+	if (scene == SWAN_SCENE_OBSERVATION) {
+		gfx_init();
+		swan_core_reset_session();
 	}
-	gfx_init();
-	while (1) {
-		const rf_input_t *input;
-		rf_frame();
-		input = rf_input();
+	swan_core_invalidate();
+}
 
-		if (result && (input->pressed & WS_KEY_A)) {
-			camera = 2; kaiju = 15; behavior = 0; disturbance = 0;
-			evidence = 0; result = 0; sun = 1800; zoom = false; dirty = true;
-		}
-		if (!result) {
-			int8_t dx = rf_dx(input->pressed);
-			if (dx) { camera = rf_clamp_u8((int16_t)camera + dx, 0, 20); dirty = true; }
-			if (input->pressed & WS_KEY_START) { zoom = !zoom; dirty = true; }
-			if ((input->held & WS_KEY_B) && disturbance && (rf_frame_count() & 3) == 0) {
-				--disturbance; dirty = true;
-			}
-			if (input->pressed & WS_KEY_A) {
-				uint8_t distance = camera > kaiju ? camera - kaiju : kaiju - camera;
-				uint8_t low = zoom ? 6 : 3;
-				uint8_t high = zoom ? 10 : 7;
-				disturbance = rf_clamp_u8((int16_t)disturbance + 24, 0, 100);
-				if (distance >= low && distance <= high) {
-					evidence |= (uint8_t)(1 << behavior);
-					rf_beep(700, 8);
-				} else rf_beep(140, 6);
-				dirty = true;
-			}
-			if ((rf_frame_count() % 150) == 0) {
-				behavior = (uint8_t)((behavior + 1) % 3);
-				dirty = true;
-			}
-			if (behavior == 2 && (rf_frame_count() % 20) == 0) {
-				kaiju = (uint8_t)(8 + rf_random() % 12);
-				dirty = true;
-			}
-			if (sun) --sun;
-			if ((evidence & 7) == 7) result = 1;
-			else if (disturbance >= 100 || sun == 0) result = 2;
-		}
-		if (dirty || (rf_frame_count() & 15) == 0) {
-			gfx_render(camera, kaiju, behavior, disturbance, sun, evidence, zoom, result);
-			dirty = false;
-		}
+void swan_scene_update(swan_scene_id_t scene, const swan_frame_t *frame) {
+	kaiju_input_t model_input = {0};
+	kaiju_event_t event;
+
+	if (scene == SWAN_SCENE_INTRO) {
+		if (swan_game_intro_complete(frame))
+			(void)swan_core_request_scene(SWAN_SCENE_OBSERVATION, 0);
+		return;
 	}
+
+	model_input.direction = swan_game_primary_axis(frame->input->pressed);
+	model_input.photograph = SWAN_GAME_ACTION_PRESSED(frame->input, SWAN_ACTION_PHOTOGRAPH);
+	model_input.hide = SWAN_GAME_ACTION_HELD(frame->input, SWAN_ACTION_HIDE);
+	model_input.toggle_zoom = SWAN_GAME_ACTION_PRESSED(frame->input, SWAN_ACTION_TOGGLE_ZOOM);
+	model_input.replay = model_input.photograph;
+	kaiju_step(&state, &model_input, frame->session_tick, &event);
+	if (event.tone_frames)
+		swan_game_audio_beep(event.tone_hz, event.tone_frames);
+	if (event.dirty || (frame->session_tick & 15u) == 0) swan_core_invalidate();
+	if (event.reset_session)
+		(void)swan_core_request_scene(SWAN_SCENE_OBSERVATION, 0);
+	else if (scene == SWAN_SCENE_OBSERVATION && state.result != KAIJU_RESULT_PLAYING)
+		(void)swan_core_request_scene(SWAN_SCENE_RESULT, 0);
+}
+
+void swan_scene_render(swan_scene_id_t scene) {
+	if (scene == SWAN_SCENE_INTRO) {
+		gfx_show_intro();
+		return;
+	}
+	gfx_render(state.camera, state.kaiju, state.behavior, state.disturbance,
+		state.sun, state.evidence, state.zoom, (uint8_t)state.result);
+}
+
+void swan_scene_exit(swan_scene_id_t scene) {
+	(void)scene;
 }

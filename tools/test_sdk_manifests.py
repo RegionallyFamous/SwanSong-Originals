@@ -1,0 +1,174 @@
+#!/usr/bin/env python3
+"""Validate SDK migration manifests without requiring a vendored SDK checkout."""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+import tomllib
+
+
+ROOT = Path(__file__).resolve().parents[1]
+GAMES = ROOT / "games"
+PLUGIN_CONTRACTS = ROOT / "plugins" / "swansong-playtester" / "scripts" / "games.json"
+INPUTS = {"x1", "x2", "x3", "x4", "y1", "y2", "y3", "y4", "a", "b", "start"}
+SCENARIO_ORDER = (
+    "neutral", "interaction", "success", "failure", "reset", "deterministic"
+)
+SCENARIOS = set(SCENARIO_ORDER)
+MAX_PLAN_FRAMES = 1500  # About 20 seconds at the WonderSwan's 75 Hz cadence.
+MAX_PLAN_EVENTS = 96
+HOLD_INPUTS = {
+    "harpoon-moon": {frozenset({"a"}), frozenset({"b"}), frozenset({"a", "b"})},
+    "one-last-lap": {frozenset({"a"}), frozenset({"b"})},
+    "pocket-kaiju-observatory": {frozenset({"b"})},
+}
+AUDIO_SCENARIOS = {
+    "mote-sound-terminal": SCENARIOS,
+    "orbital-courier": {"interaction", "success", "failure", "reset", "deterministic"},
+    "scrapframe-garage": {"interaction", "success", "failure", "reset", "deterministic"},
+    "radio-ghost": {"interaction", "success", "failure", "reset", "deterministic"},
+    "harpoon-moon": {"interaction", "success", "deterministic"},
+    "turncoat-tactics": set(),
+    "pocket-kaiju-observatory": {"interaction", "success", "failure", "reset", "deterministic"},
+    "rotate-dungeon": {"interaction", "success", "failure", "reset", "deterministic"},
+    "one-last-lap": set(),
+    "bug-witch": {"interaction", "success", "failure", "reset", "deterministic"},
+}
+EXPECTED = {
+    "mote-sound-terminal": 1,
+    "orbital-courier": 2,
+    "scrapframe-garage": 3,
+    "radio-ghost": 4,
+    "harpoon-moon": 5,
+    "turncoat-tactics": 6,
+    "pocket-kaiju-observatory": 7,
+    "rotate-dungeon": 8,
+    "one-last-lap": 9,
+    "bug-witch": 10,
+}
+PHYSICAL_DIRECTIONS = {
+    "left": ("X4", "Y1"),
+    "right": ("X2", "Y3"),
+    "up": ("X3", "Y2"),
+    "down": ("X1", "Y4"),
+}
+SPECIAL_DIRECTION_ACTIONS = {
+    "bug-witch": {
+        "previous_socket": PHYSICAL_DIRECTIONS["left"],
+        "next_socket": PHYSICAL_DIRECTIONS["right"],
+        "previous_familiar": PHYSICAL_DIRECTIONS["up"],
+        "next_familiar": PHYSICAL_DIRECTIONS["down"],
+    },
+    "mote-sound-terminal": {
+        "previous_track": PHYSICAL_DIRECTIONS["left"],
+        "next_track": PHYSICAL_DIRECTIONS["right"],
+        # The model increases tempo in the helper's positive/down direction.
+        "tempo_up": PHYSICAL_DIRECTIONS["down"],
+        "tempo_down": PHYSICAL_DIRECTIONS["up"],
+    },
+    "radio-ghost": {
+        "tune_down": PHYSICAL_DIRECTIONS["left"],
+        "tune_up": PHYSICAL_DIRECTIONS["right"],
+        # Gain subtracts the helper direction, so physical up increases it.
+        "gain_up": PHYSICAL_DIRECTIONS["up"],
+        "gain_down": PHYSICAL_DIRECTIONS["down"],
+    },
+    "scrapframe-garage": {
+        "previous_part": PHYSICAL_DIRECTIONS["left"],
+        "next_part": PHYSICAL_DIRECTIONS["right"],
+    },
+}
+
+
+def validate_plan(path: Path, slug: str) -> dict[str, object]:
+    plan = json.loads(path.read_text())
+    assert plan["schema"] == "swan-song-frame-input-plan-v1", path
+    total = plan["totalFrames"]
+    assert isinstance(total, int) and 120 <= total <= MAX_PLAN_FRAMES, (
+        path, total, MAX_PLAN_FRAMES
+    )
+    previous = -1
+    assert plan["events"], path
+    assert len(plan["events"]) <= MAX_PLAN_EVENTS, (
+        path, len(plan["events"]), MAX_PLAN_EVENTS
+    )
+    assert plan["events"][0] == {"frameIndex": 0, "inputs": []}, path
+    for event in plan["events"]:
+        frame = event["frameIndex"]
+        inputs = event["inputs"]
+        assert previous < frame < total, (path, frame)
+        assert len(inputs) == len(set(inputs)), path
+        assert set(inputs) <= INPUTS, (path, inputs)
+        previous = frame
+    for index, event in enumerate(plan["events"]):
+        if not event["inputs"]:
+            continue
+        assert index + 1 < len(plan["events"]), (path, event)
+        release = plan["events"][index + 1]
+        assert release["inputs"] == [], (path, event, release)
+        if release["frameIndex"] != event["frameIndex"] + 1:
+            allowed = HOLD_INPUTS.get(slug, set())
+            assert frozenset(event["inputs"]) in allowed, (path, event)
+        if index + 2 < len(plan["events"]):
+            following = plan["events"][index + 2]
+            assert following["frameIndex"] >= release["frameIndex"] + 2, (
+                path, release, following
+            )
+    return plan
+
+
+def main() -> None:
+    plugin = json.loads(PLUGIN_CONTRACTS.read_text())
+    assert set(plugin) == set(EXPECTED)
+    seen_ids: set[int] = set()
+    for slug, expected_game_id in EXPECTED.items():
+        root = GAMES / slug
+        with (root / "swan.toml").open("rb") as handle:
+            manifest = tomllib.load(handle)
+        with (root / "wfconfig.toml").open("rb") as handle:
+            wonderful = tomllib.load(handle)["cartridge"]
+        game = manifest["game"]
+        cartridge = manifest["cartridge"]
+        actions = manifest["controls"]["actions"]
+        scenarios = manifest["play"]["scenarios"]
+        budgets = manifest["budgets"]
+
+        assert manifest["schema_version"] == 1, slug
+        assert game["id"] == slug, slug
+        assert game["title"] == plugin[slug]["title"], slug
+        assert cartridge["game_id"] == expected_game_id == wonderful["game_id"], slug
+        assert cartridge["publisher_id"] == wonderful["publisher_id"], slug
+        assert cartridge["version"] == wonderful["game_version"], slug
+        assert cartridge["save_type"] == "none" and wonderful["save_type"] == "NONE", slug
+        assert cartridge["rtc"] is wonderful["rtc"] is False, slug
+        assert game["hardware"] == "color-required" and wonderful["color"] is True, slug
+        assert actions and len(actions) <= 16, slug
+        expected_directions = SPECIAL_DIRECTION_ACTIONS.get(slug, PHYSICAL_DIRECTIONS)
+        for action, inputs in expected_directions.items():
+            assert tuple(actions[action]) == inputs, (slug, action, actions[action])
+        assert len(scenarios) == len(SCENARIOS), slug
+        assert [item["id"] for item in scenarios] == list(SCENARIO_ORDER), slug
+        assert budgets["rom_bytes"] <= 8 * 1024 * 1024, slug
+        assert cartridge["game_id"] not in seen_ids, slug
+        seen_ids.add(cartridge["game_id"])
+
+        plans: dict[str, dict[str, object]] = {}
+        for scenario in scenarios:
+            assert scenario["required_checks"], (slug, scenario["id"])
+            assert scenario.get("audio", False) is (
+                scenario["id"] in AUDIO_SCENARIOS[slug]
+            ), (slug, scenario["id"], "audio evidence declaration")
+            plan = (root / scenario["plan"]).resolve()
+            plan.relative_to(root.resolve())
+            plans[scenario["id"]] = validate_plan(plan, slug)
+        assert plans["deterministic"] == plans["success"], slug
+        rom = next(root.glob("*.wsc"), None)
+        if rom is not None:
+            assert rom.stat().st_size <= budgets["rom_bytes"], slug
+
+    print("PASS ten SDK manifests and sixty fresh-boot SwanSong frame plans are consistent")
+
+
+if __name__ == "__main__":
+    main()

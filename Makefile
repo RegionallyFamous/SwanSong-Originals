@@ -10,17 +10,14 @@ GAMES := \
 	one-last-lap \
 	bug-witch
 
-.PHONY: all art clean dist engine verify test smoke playtester-check $(GAMES)
+.PHONY: all art clean dist verify native-test test smoke playtester-check $(GAMES)
 
-all: engine $(GAMES)
+all: $(GAMES)
 
 art:
 	python3 tools/build_fullscreen_art.py
 
-engine:
-	$(MAKE) -C engine
-
-$(GAMES): engine
+$(GAMES):
 	$(MAKE) -C games/$@
 
 dist: all
@@ -32,10 +29,14 @@ dist: all
 verify: dist
 	python3 tools/verify_roms.py dist/*.wsc
 
-test: verify
+native-test:
+	$(MAKE) -C tests/native
+
+test: verify native-test
 	python3 tools/test_game_invariants.py
 	python3 tools/test_gameplay_paths.py
 	python3 tools/test_native_art.py
+	python3 tools/test_sdk_manifests.py
 
 smoke: test
 	tools/smoke_swansong.sh dist/*.wsc
@@ -44,7 +45,7 @@ playtester-check: dist
 	plugins/swansong-playtester/tests/check_swansong_bridge.sh
 
 clean:
-	$(MAKE) -C engine clean
+	$(MAKE) -C tests/native clean
 	@for game in $(GAMES); do \
 		$(MAKE) -C games/$$game clean; \
 	done

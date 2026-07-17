@@ -12,6 +12,8 @@ jobs:
       image: cbrzeszczot/wonderful@sha256:1bd074214c0592a5fca3f26ce0c47d3a809f48e83f68705189fe30c78e75435e
     steps:
       - uses: actions/checkout@v6
+        with:
+          submodules: recursive
       - name: Install verifier runtime
         run: |
           apt-get update

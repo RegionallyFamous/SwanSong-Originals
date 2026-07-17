@@ -1,6 +1,9 @@
-#include "rf_swan.h"
+#include <swan/legacy.h>
+
+#include "swan_game_runtime.h"
 #include "gfx.h"
 #include "gameplay_art.h"
+#include "model.h"
 
 static uint8_t lane_x(uint8_t lane, uint8_t y) {
 	uint8_t spread = (uint8_t)(y - 4);
@@ -10,7 +13,7 @@ static uint8_t lane_x(uint8_t lane, uint8_t y) {
 }
 
 void gfx_show_intro(void) {
-	rf_gfx_show_intro(game_intro_tiles, sizeof(game_intro_tiles),
+	swan_game_gfx_show_intro(game_intro_tiles, sizeof(game_intro_tiles),
 		game_intro_map, game_palette);
 }
 
@@ -22,7 +25,7 @@ void gfx_render(uint8_t lap, uint8_t progress, uint8_t speed,
 	uint8_t battery, uint8_t lane, bool helped, uint8_t result) {
 	uint8_t y;
 	uint8_t x;
-	uint8_t rival_lane = (uint8_t)((progress / 25 + 1) % 3);
+	uint8_t rival_lane = lap_rival_lane(progress);
 
 	rf_gfx_fill(art_sky[0], 0, 0, 28, 6);
 	rf_gfx_fill(art_road[0], 0, 6, 28, 12);
@@ -65,7 +68,9 @@ void gfx_render(uint8_t lap, uint8_t progress, uint8_t speed,
 	}
 	rf_gfx_put_image(lane_x(lane, 14), 14, art_player, 4, 3);
 	if (result) {
-		rf_gfx_put_image(12, 7, result == 1 ? art_result_win : art_result_loss, 4, 4);
+		rf_gfx_put_image(12, 7, result == 2 ? art_result_loss : art_result_win, 4, 4);
+		if (result == 3) rf_gfx_put_image(17, 8, art_tow, 2, 2);
+		else if (result == 1) rf_gfx_put_image(17, 8, art_rival, 2, 2);
 		rf_gfx_put_image(13, 11, art_loop, 2, 2);
 	}
 }

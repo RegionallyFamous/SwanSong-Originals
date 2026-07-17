@@ -1,0 +1,46 @@
+#include <assert.h>
+#include <string.h>
+
+#include "model.h"
+
+int main(void) {
+	mote_state_t state;
+	mote_state_t reset_copy;
+	mote_input_t input = {0, 0, false, false, false};
+	mote_event_t event;
+	uint8_t i;
+
+	mote_reset(&state);
+	reset_copy = state;
+	assert(state.track == 0 && state.tempo == 12 && state.playing);
+	input.track_direction = 1;
+	input.tempo_direction = 1;
+	input.toggle_scope = true;
+	mote_step(&state, &input, &event);
+	assert(state.track == 1 && state.tempo == 13 && state.scope == 1);
+	assert(event.dirty);
+
+	memset(&input, 0, sizeof(input));
+	input.toggle_play = true;
+	mote_step(&state, &input, &event);
+	assert(!state.playing && event.sound_off);
+	mote_step(&state, &input, &event);
+	assert(state.playing);
+
+	mote_reset(&state);
+	state.track = 1;
+	state.tempo = 13;
+	memset(&input, 0, sizeof(input));
+	for (i = 0; i < state.tempo; ++i) mote_step(&state, &input, &event);
+	assert(state.step == 1 && event.tone_hz == mote_note_hz(state.track, 1));
+	assert(event.tone_volume == 7);
+
+	input.reset = true;
+	mote_step(&state, &input, &event);
+	assert(event.reset_session);
+	/* The original loop advances one sequencer tick after reset. */
+	assert(state.tick == 1);
+	state.tick = 0;
+	assert(memcmp(&state, &reset_copy, sizeof(state)) == 0);
+	return 0;
+}

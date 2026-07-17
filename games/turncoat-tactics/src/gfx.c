@@ -1,4 +1,6 @@
-#include "rf_swan.h"
+#include <swan/legacy.h>
+
+#include "swan_game_runtime.h"
 #include "gfx.h"
 #include "gameplay_art.h"
 
@@ -14,7 +16,7 @@ static const uint16_t __far *unit_for(uint8_t team, uint8_t kind) {
 }
 
 void gfx_show_intro(void) {
-	rf_gfx_show_intro(game_intro_tiles, sizeof(game_intro_tiles),
+	swan_game_gfx_show_intro(game_intro_tiles, sizeof(game_intro_tiles),
 		game_intro_map, game_palette);
 }
 
@@ -22,17 +24,17 @@ void gfx_init(void) {
 	rf_gfx_load(game_tiles, sizeof(game_tiles), game_palette, art_hud_bg[0]);
 }
 
-void gfx_render(uint8_t cursor_x, uint8_t cursor_y, uint8_t selected,
-	uint8_t turns, uint8_t recruits, uint8_t result,
-	const unit_t *allies, const unit_t *enemies) {
+void gfx_render(const turncoat_state_t *state) {
 	uint8_t y;
 	uint8_t x;
 	uint8_t i;
+	const unit_t *allies = state->allies;
+	const unit_t *enemies = state->enemies;
 
 	rf_gfx_fill(art_hud_bg[0], 0, 0, 28, 18);
 	for (i = 0; i < 9; ++i) {
 		rf_gfx_put_tile((uint8_t)(1 + i), 0,
-			turns > (uint8_t)(i * 2) ? art_pip_full[0] : art_pip_empty[0]);
+			state->turns > (uint8_t)(i * 2) ? art_pip_full[0] : art_pip_empty[0]);
 	}
 	for (i = 0; i < 3; ++i) {
 		rf_gfx_put_tile((uint8_t)(13 + i), 0,
@@ -40,7 +42,7 @@ void gfx_render(uint8_t cursor_x, uint8_t cursor_y, uint8_t selected,
 	}
 	for (i = 0; i < 4; ++i) {
 		rf_gfx_put_tile((uint8_t)(21 + i), 0,
-			i < recruits ? art_pip_full[0] : art_pip_empty[0]);
+			i < state->recruits ? art_pip_full[0] : art_pip_empty[0]);
 	}
 	for (y = 0; y < 6; ++y) {
 		for (x = 0; x < 8; ++x) {
@@ -58,7 +60,7 @@ void gfx_render(uint8_t cursor_x, uint8_t cursor_y, uint8_t selected,
 		sy = (uint8_t)(3 + allies[i].y * 2);
 		for (hp = 0; hp < allies[i].hp; ++hp) rf_gfx_put_tile((uint8_t)(sx + hp), sy, art_pip_full[0]);
 		rf_gfx_put_image((uint8_t)(sx + 1), (uint8_t)(sy + 1), unit_for(0, i % 3), 1, 1);
-		if (i == selected) rf_gfx_put_tile((uint8_t)(sx + 2), (uint8_t)(sy + 1), art_cursor[0]);
+		if (i == state->selected) rf_gfx_put_tile((uint8_t)(sx + 2), (uint8_t)(sy + 1), art_cursor[0]);
 	}
 	for (i = 0; i < ENEMY_CAPACITY; ++i) {
 		uint8_t hp;
@@ -70,10 +72,12 @@ void gfx_render(uint8_t cursor_x, uint8_t cursor_y, uint8_t selected,
 		for (hp = 0; hp < enemies[i].hp; ++hp) rf_gfx_put_tile((uint8_t)(sx + hp), sy, art_pip_full[0]);
 		rf_gfx_put_image((uint8_t)(sx + 1), (uint8_t)(sy + 1), unit_for(1, i % 3), 1, 1);
 	}
-	rf_gfx_put_tile((uint8_t)(2 + cursor_x * 3),
-		(uint8_t)(4 + cursor_y * 2), art_cursor[0]);
-	if (result) {
-		rf_gfx_put_image(12, 7, result == 1 ? art_result_win : art_result_loss, 4, 4);
+	rf_gfx_put_tile((uint8_t)(2 + state->cursor_x * 3),
+		(uint8_t)(4 + state->cursor_y * 2), art_cursor[0]);
+	if (state->result) {
+		rf_gfx_put_image(12, 7,
+			state->result == TURNCOAT_RESULT_WIN ? art_result_win : art_result_loss,
+			4, 4);
 		rf_gfx_put_image(13, 11, art_loop, 2, 2);
 	}
 }

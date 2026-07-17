@@ -1,12 +1,9 @@
-#include "rf_swan.h"
+#include <swan/legacy.h>
+
+#include "swan_game_runtime.h"
 #include "gfx.h"
 #include "gameplay_art.h"
-
-static uint16_t visual_target(uint8_t clue) {
-	if (clue == 0) return 934;
-	if (clue == 1) return 995;
-	return 1042;
-}
+#include "model.h"
 
 static const uint16_t __far *wave_for(uint8_t level) {
 	switch (level & 7) {
@@ -28,7 +25,7 @@ static const uint16_t __far *clue_for(uint8_t clue) {
 }
 
 void gfx_show_intro(void) {
-	rf_gfx_show_intro(game_intro_tiles, sizeof(game_intro_tiles),
+	swan_game_gfx_show_intro(game_intro_tiles, sizeof(game_intro_tiles),
 		game_intro_map, game_palette);
 }
 
@@ -39,7 +36,7 @@ void gfx_init(void) {
 void gfx_render(uint16_t frequency, uint8_t gain, uint16_t time,
 	uint8_t clue, uint8_t result, bool gate) {
 	uint8_t x;
-	uint16_t target = visual_target(clue < 3 ? clue : 2);
+	uint16_t target = radio_target_for(clue < 3 ? clue : 2);
 	uint16_t distance = frequency > target ? frequency - target : target - frequency;
 
 	rf_gfx_fill(art_panel[0], 0, 0, 28, 18);

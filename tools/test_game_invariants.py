@@ -57,6 +57,46 @@ def test_graphical_front_ends():
             assert terminal_call not in text, f"terminal call remains in {source}"
 
 
+def test_deterministic_sessions_and_documented_directions():
+    sources = {path.parent.parent.name: path.read_text()
+               for path in sorted((ROOT / "games").glob("*/src/main.c"))}
+    for slug, text in sources.items():
+        assert "void main(" not in text, f"{slug} still owns the platform loop"
+        for callback in (
+            "swan_game_boot(", "swan_scene_enter(", "swan_scene_update(",
+            "swan_scene_render(", "swan_scene_exit(",
+        ):
+            assert callback in text, f"{slug} is missing {callback}"
+        assert "swan_core_reset_session(" in text, (
+            f"{slug} must drain input and reset deterministic session time"
+        )
+        assert "frame->input" in text, f"{slug} bypasses immutable SDK input"
+    for slug in ("harpoon-moon", "pocket-kaiju-observatory", "one-last-lap"):
+        assert "swan_game_primary_axis(frame->input->pressed)" in sources[slug], (
+            f"{slug} does not honor all four documented directions"
+        )
+    for slug in ("orbital-courier", "turncoat-tactics", "rotate-dungeon"):
+        assert "swan_input_dx(frame->input->pressed)" in sources[slug]
+        assert "swan_input_dy(frame->input->pressed)" in sources[slug]
+    lap = (ROOT / "games/one-last-lap/src/model.c").read_text()
+    assert "lap_rival_contact(state->progress, state->lane)" in lap
+    assert "state->helped ? LAP_RESULT_COOPERATIVE : LAP_RESULT_SOLO" in lap
+
+
+def test_sdk_runtime_ownership():
+    shared_make = (ROOT / "mk/wonderful-game.mk").read_text()
+    root_make = (ROOT / "Makefile").read_text()
+    assert "SWANSONG_RUNTIME" in shared_make
+    assert "swan_config.c" in shared_make
+    assert "librf_swan.a" not in shared_make
+    assert "../../engine/include" not in shared_make
+    assert "all: engine" not in root_make
+    for renderer in sorted((ROOT / "games").glob("*/src/gfx.c")):
+        text = renderer.read_text()
+        assert "#include <swan/legacy.h>" in text, renderer
+        assert '#include "rf_swan.h"' not in text, renderer
+
+
 def test_radio_ghost_timing():
     # Held-input repeat every three frames reaches all clues well before dawn.
     targets = (934, 995, 1042)
@@ -147,6 +187,8 @@ def test_bug_witch_puzzles():
 def main():
     test_cartridge_headers()
     test_graphical_front_ends()
+    test_deterministic_sessions_and_documented_directions()
+    test_sdk_runtime_ownership()
     test_radio_ghost_timing()
     test_courier_route()
     test_rotate_rooms()

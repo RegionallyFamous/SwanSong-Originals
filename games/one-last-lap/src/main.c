@@ -1,70 +1,69 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "rf_swan.h"
+#include <swan/swan.h>
+
+#include "swan_controls.h"
+#include "swan_game_runtime.h"
+#include "swan_project.h"
 #include "gfx.h"
+#include "model.h"
 
-void main(void) {
-	uint8_t lap = 1;
-	uint8_t progress = 0;
-	uint8_t speed = 0;
-	uint8_t battery = 70;
-	uint8_t lane = 1;
-	uint8_t result = 0;
-	bool helped = false;
-	bool crash_zone = false;
-	bool dirty = true;
-	uint8_t intro;
+static lap_state_t state;
 
-	rf_init(false);
-	gfx_show_intro();
-	for (intro = 0; intro < 36; ++intro) {
-		rf_frame();
-		if (rf_input()->pressed) break;
+void swan_game_boot(void) {
+	lap_reset(&state);
+	swan_game_audio_init();
+}
+
+void swan_scene_enter(swan_scene_id_t scene, uint16_t argument) {
+	(void)argument;
+	if (scene == SWAN_SCENE_RACE) {
+		gfx_init();
+		swan_core_reset_session();
 	}
-	gfx_init();
-	while (1) {
-		const rf_input_t *input;
-		rf_frame();
-		input = rf_input();
+	swan_core_invalidate();
+}
 
-		if (result && (input->pressed & WS_KEY_A)) {
-			lap = 1; progress = 0; speed = 0; battery = 70; lane = 1;
-			result = 0; helped = false; crash_zone = false; dirty = true;
-		}
-		if (!result) {
-			int8_t dx = rf_dx(input->pressed);
-			if (dx) { lane = rf_clamp_u8((int16_t)lane + dx, 0, 2); dirty = true; }
-			if ((input->held & WS_KEY_A) && (rf_frame_count() % 10) == 0 && speed < 6 && battery) {
-				++speed; dirty = true;
-			}
-			if ((input->held & WS_KEY_B) && (rf_frame_count() % 6) == 0 && speed) {
-				--speed; dirty = true;
-			}
-			if ((input->pressed & WS_KEY_START) && !helped && lap == 2 && progress >= 40 && progress <= 56) {
-				helped = true; speed = 0; battery = battery > 10 ? battery - 10 : 0;
-				rf_beep(560, 12); dirty = true;
-			}
-			if ((rf_frame_count() & 7) == 0 && speed) {
-				uint16_t next = (uint16_t)progress + speed;
-				if (next >= 100) {
-					progress = (uint8_t)(next - 100);
-					if (++lap > 3) result = 1;
-				} else progress = (uint8_t)next;
-				if (battery) --battery;
-				dirty = true;
-			}
-			if (!crash_zone && ((progress >= 24 && progress <= 30 && lane == 1) ||
-				(progress >= 68 && progress <= 74 && lane == 2))) {
-				speed = 1; battery = battery > 6 ? battery - 6 : 0; crash_zone = true;
-				rf_beep(100, 8); dirty = true;
-			}
-			if (!((progress >= 20 && progress <= 34) || (progress >= 64 && progress <= 78))) crash_zone = false;
-			if (battery == 0) { speed = 0; result = 2; dirty = true; }
-		}
-		if (dirty || (rf_frame_count() & 15) == 0) {
-			gfx_render(lap > 3 ? 3 : lap, progress, speed, battery, lane, helped, result);
-			dirty = false;
-		}
+void swan_scene_update(swan_scene_id_t scene, const swan_frame_t *frame) {
+	lap_input_t model_input = {0};
+	lap_event_t event;
+
+	if (scene == SWAN_SCENE_INTRO) {
+		if (swan_game_intro_complete(frame))
+			(void)swan_core_request_scene(SWAN_SCENE_RACE, 0);
+		return;
 	}
+	if (scene == SWAN_SCENE_RESULT) {
+		if (SWAN_GAME_ACTION_PRESSED(frame->input, SWAN_ACTION_ACCELERATE_OR_REPLAY)) {
+			lap_reset(&state);
+			(void)swan_core_request_scene(SWAN_SCENE_RACE, 0);
+		}
+		if ((frame->session_tick & 15u) == 0) swan_core_invalidate();
+		return;
+	}
+
+	model_input.lane_direction = swan_game_primary_axis(frame->input->pressed);
+	model_input.accelerate = SWAN_GAME_ACTION_HELD(frame->input, SWAN_ACTION_ACCELERATE_OR_REPLAY);
+	model_input.brake = SWAN_GAME_ACTION_HELD(frame->input, SWAN_ACTION_BRAKE);
+	model_input.tow = SWAN_GAME_ACTION_PRESSED(frame->input, SWAN_ACTION_TOW);
+	lap_step(&state, &model_input, frame->session_tick, &event);
+	if (event.tone_frames)
+		swan_game_audio_beep(event.tone_hz, event.tone_frames);
+	if (event.dirty || (frame->session_tick & 15u) == 0) swan_core_invalidate();
+	if (state.result != LAP_RESULT_PLAYING)
+		(void)swan_core_request_scene(SWAN_SCENE_RESULT, 0);
+}
+
+void swan_scene_render(swan_scene_id_t scene) {
+	if (scene == SWAN_SCENE_INTRO) {
+		gfx_show_intro();
+		return;
+	}
+	gfx_render(state.lap > 3 ? 3 : state.lap, state.progress, state.speed,
+		state.battery, state.lane, state.helped, (uint8_t)state.result);
+}
+
+void swan_scene_exit(swan_scene_id_t scene) {
+	(void)scene;
 }

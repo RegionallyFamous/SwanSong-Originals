@@ -12,7 +12,10 @@ typedef struct {
 	uint16_t released;
 } rf_input_t;
 
+#define RF_DEFAULT_RANDOM_SEED 0x71D3u
+
 void rf_init(bool vertical);
+void rf_session_begin(uint16_t random_seed);
 void rf_set_orientation(bool vertical);
 void rf_frame(void);
 void rf_clear(void);
@@ -36,6 +39,7 @@ void rf_playfield_end(void);
 const rf_input_t *rf_input(void);
 int8_t rf_dx(uint16_t keys);
 int8_t rf_dy(uint16_t keys);
+int8_t rf_primary_axis(uint16_t keys);
 bool rf_pressed_any_direction(void);
 
 uint16_t rf_frame_count(void);

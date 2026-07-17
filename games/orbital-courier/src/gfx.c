@@ -1,6 +1,9 @@
-#include "rf_swan.h"
+#include <swan/legacy.h>
+
+#include "swan_game_runtime.h"
 #include "gfx.h"
 #include "gameplay_art.h"
+#include "model.h"
 
 #define VIEW_COLS 14
 #define VIEW_ROWS 8
@@ -18,7 +21,7 @@ static uint8_t camera_axis(uint8_t position, uint8_t lead, uint8_t maximum) {
 }
 
 void orbital_gfx_show_intro(void) {
-	rf_gfx_show_intro(orbital_intro_tiles, sizeof(orbital_intro_tiles),
+	swan_game_gfx_show_intro(orbital_intro_tiles, sizeof(orbital_intro_tiles),
 		orbital_intro_map, orbital_palette);
 }
 

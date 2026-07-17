@@ -1,11 +1,9 @@
-#include "rf_swan.h"
+#include <swan/legacy.h>
+
+#include "swan_game_runtime.h"
 #include "gfx.h"
 #include "gameplay_art.h"
-
-static const uint8_t input_state[5] = {0, 0, 1, 1, 0};
-static const uint8_t target_state[5] = {1, 1, 0, 1, 0};
-static const uint8_t limit_state[5] = {1, 2, 1, 2, 3};
-static const uint8_t mask_state[5] = {1, 3, 4, 5, 7};
+#include "model.h"
 
 static const uint16_t __far *socket_for(uint8_t kind) {
 	if (kind == 1) return art_socket_1;
@@ -27,7 +25,7 @@ static const uint16_t __far *small_for(uint8_t kind) {
 }
 
 void gfx_show_intro(void) {
-	rf_gfx_show_intro(game_intro_tiles, sizeof(game_intro_tiles),
+	swan_game_gfx_show_intro(game_intro_tiles, sizeof(game_intro_tiles),
 		game_intro_map, game_palette);
 }
 
@@ -46,16 +44,16 @@ void gfx_render(const uint8_t *cells, uint8_t cursor, uint8_t selected,
 		if (cells[i]) ++used;
 	}
 	for (i = 0; i < 3; ++i) {
-		if (mask_state[puzzle] & (uint8_t)(1 << i)) {
+		if (bug_puzzles[puzzle].mask & (uint8_t)(1 << i)) {
 			rf_gfx_put_image((uint8_t)(11 + i * 3), 0, small_for(i), 2, 2);
 		}
 	}
 	for (i = 0; i < 3; ++i) {
 		rf_gfx_put_tile((uint8_t)(22 + i * 2), 0,
-			i < limit_state[puzzle] && i >= used ? art_pip_full[0] : art_pip_empty[0]);
+			i < bug_puzzles[puzzle].limit && i >= used ? art_pip_full[0] : art_pip_empty[0]);
 	}
 	rf_gfx_put_image(0, 6,
-		input_state[puzzle] ? art_signal_on : art_signal_off, 2, 2);
+		bug_puzzles[puzzle].input ? art_signal_on : art_signal_off, 2, 2);
 	for (i = 0; i < 5; ++i) {
 		uint8_t sx = (uint8_t)(2 + i * 5);
 		rf_gfx_put_image(sx, 4, socket_for(cells[i]), 4, 4);
@@ -63,7 +61,7 @@ void gfx_render(const uint8_t *cells, uint8_t cursor, uint8_t selected,
 		if (i < 4) rf_gfx_put_tile((uint8_t)(sx + 4), 6, art_wire[0]);
 	}
 	rf_gfx_put_image(26, 6,
-		target_state[puzzle] ? art_signal_on : art_signal_off, 2, 2);
+		bug_puzzles[puzzle].target ? art_signal_on : art_signal_off, 2, 2);
 	for (i = 0; i < 3; ++i) {
 		rf_gfx_put_image((uint8_t)(4 + i * 7), 13,
 			beetle_for(i, selected == i + 1), 3, 3);
