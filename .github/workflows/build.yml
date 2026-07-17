@@ -17,6 +17,6 @@ jobs:
       - name: Install verifier runtime
         run: |
           apt-get update
-          apt-get install --yes --no-install-recommends python3
+          apt-get install --yes --no-install-recommends build-essential python3
       - name: Build and verify all ROMs
         run: make clean test WONDERFUL_TOOLCHAIN=/opt/wonderful
