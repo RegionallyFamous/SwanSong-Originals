@@ -7,22 +7,43 @@ REPO_DIR=$(CDPATH= cd -- "$PLUGIN_DIR/../.." && pwd)
 
 if [ -n "${SWANSONG_DESKTOP_DIR:-}" ]; then
     SWANSONG_ROOT=$SWANSONG_DESKTOP_DIR
-elif [ -x "$REPO_DIR/../GitHub/SwanSong-Desktop/Scripts/check-playtest-mcp-server.sh" ]; then
+elif [ -x "$REPO_DIR/../GitHub/SwanSong-Desktop/Scripts/check-mcp-server.sh" ]; then
     SWANSONG_ROOT=$(CDPATH= cd -- "$REPO_DIR/../GitHub/SwanSong-Desktop" && pwd)
 elif [ -n "${HOME:-}" ] \
-    && [ -x "$HOME/Documents/GitHub/SwanSong-Desktop/Scripts/check-playtest-mcp-server.sh" ]; then
+    && [ -x "$HOME/Documents/GitHub/SwanSong-Desktop/Scripts/check-mcp-server.sh" ]; then
     SWANSONG_ROOT=$(CDPATH= cd -- "$HOME/Documents/GitHub/SwanSong-Desktop" && pwd)
 else
     SWANSONG_ROOT=""
 fi
 
-CHECK=${SWANSONG_ROOT:+$SWANSONG_ROOT/Scripts/check-playtest-mcp-server.sh}
-if [ -z "$CHECK" ] || [ ! -x "$CHECK" ]; then
+CHECK=${SWANSONG_ROOT:+$SWANSONG_ROOT/Scripts/check-mcp-server.sh}
+PLAYTEST_CHECK=${SWANSONG_ROOT:+$SWANSONG_ROOT/Scripts/check-playtest-mcp-server.sh}
+if [ -z "$CHECK" ] || [ ! -x "$CHECK" ] \
+    || [ -z "$PLAYTEST_CHECK" ] || [ ! -x "$PLAYTEST_CHECK" ]; then
     echo "SwanSong Desktop was not found. Set SWANSONG_DESKTOP_DIR to its checkout." >&2
     exit 2
 fi
 
 "$CHECK"
+"$PLAYTEST_CHECK"
+python3 - "$PLUGIN_DIR/.mcp.json" <<'PY'
+import json
+import pathlib
+import sys
+
+servers = json.loads(pathlib.Path(sys.argv[1]).read_text())["mcpServers"]
+assert servers == {
+    "swansong-playtester": {
+        "command": "./scripts/run_swansong_playtest_mcp.sh",
+        "cwd": ".",
+    },
+    "swansong-translation-lab": {
+        "command": "./scripts/run_swansong_mcp.sh",
+        "cwd": ".",
+    },
+}
+print("PASS SwanSong plugin retains one-shot comparison and exposes full automation")
+PY
 python3 - "$PLUGIN_DIR/scripts/games.json" <<'PY'
 import json
 import pathlib

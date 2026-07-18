@@ -1,5 +1,9 @@
 schema_version = 1
 
+[sdk]
+version = "0.3.1"
+revision = "sha256:92c2f3b0823465c0d0b0d4e094ef3b2c89fcbf2e984a364cb1021e95e6043874"
+
 [game]
 id = "bug-witch"
 title = "Bug Witch"

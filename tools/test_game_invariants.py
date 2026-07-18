@@ -88,12 +88,23 @@ def test_sdk_runtime_ownership():
     root_make = (ROOT / "Makefile").read_text()
     assert "SWANSONG_RUNTIME" in shared_make
     assert "swan_config.c" in shared_make
+    assert "HOST_TEST_NAME ?= $(NAME)" in shared_make
+    assert "test: all" in shared_make
+    assert "$(HOST_TEST)" in shared_make
+    assert "HOST_TEST_NAME := pocket_kaiju" in (
+        ROOT / "games/pocket-kaiju-observatory/Makefile"
+    ).read_text()
     assert "librf_swan.a" not in shared_make
     assert "../../engine/include" not in shared_make
     assert "all: engine" not in root_make
     for renderer in sorted((ROOT / "games").glob("*/src/gfx.c")):
         text = renderer.read_text()
-        assert "#include <swan/legacy.h>" in text, renderer
+        if renderer.parent.parent.name in {"mote-sound-terminal", "orbital-courier"}:
+            assert "#include <swan/legacy.h>" not in text, renderer
+            assert '#include "swan_assets.h"' in text, renderer
+            assert "swan_gfx_load_tiles(" in text, renderer
+        else:
+            assert "#include <swan/legacy.h>" in text, renderer
         assert '#include "rf_swan.h"' not in text, renderer
 
 

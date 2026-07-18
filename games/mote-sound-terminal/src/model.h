@@ -22,14 +22,12 @@ typedef struct {
 } mote_input_t;
 
 typedef struct {
-	uint16_t tone_hz;
-	uint8_t tone_volume;
 	bool sound_off;
+	bool play_note;
 	bool reset_session;
 	bool dirty;
 } mote_event_t;
 
-uint16_t mote_note_hz(uint8_t track, uint8_t step);
 void mote_reset(mote_state_t *state);
 void mote_step(mote_state_t *state, const mote_input_t *input,
 	mote_event_t *event);

@@ -16,6 +16,33 @@ REPO = PLUGIN.parents[1]
 SERVER = PLUGIN / "scripts" / "run_swansong_mcp.sh"
 ROM = REPO / "dist" / "mote_sound_terminal.wsc"
 FIXTURES = Path(__file__).with_name("fixtures")
+EXPECTED_TOOLS = {
+    "swansong_status",
+    "swansong_navigate",
+    "swansong_player",
+    "swansong_playtest_plan",
+    "swansong_observed_play_start",
+    "swansong_observed_play_resume",
+    "swansong_observed_play_step",
+    "swansong_observed_play_finish",
+    "swansong_observed_play_cancel",
+    "swansong_translation_capture_plan",
+    "swansong_translation_probe_rectangle",
+    "swansong_translation_probe_rectangle_source",
+    "swansong_translation_record_route",
+    "swansong_translation_verify_pair",
+}
+PROJECT_WRITE_TOOLS = {
+    "swansong_observed_play_start",
+    "swansong_observed_play_resume",
+    "swansong_observed_play_finish",
+    "swansong_observed_play_cancel",
+    "swansong_translation_capture_plan",
+    "swansong_translation_probe_rectangle",
+    "swansong_translation_probe_rectangle_source",
+    "swansong_translation_record_route",
+    "swansong_translation_verify_pair",
+}
 
 
 def exchange(process: subprocess.Popen, request: dict) -> dict:
@@ -75,9 +102,30 @@ def main() -> None:
                 "clientInfo": {"name": "SwanSongOriginalsTest", "version": "1"},
             },
         })
-        assert initialized["result"]["serverInfo"]["name"] == "swansong-playtester"
+        assert initialized["result"]["serverInfo"]["name"] == "swansong"
 
-        denied = call(process, 2, {
+        listed = exchange(process, {
+            "jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {},
+        })
+        tools = {tool["name"]: tool for tool in listed["result"]["tools"]}
+        advertised = set(tools)
+        assert advertised == EXPECTED_TOOLS, (
+            f"installed plugin server tool mismatch: missing "
+            f"{sorted(EXPECTED_TOOLS - advertised)}, unexpected "
+            f"{sorted(advertised - EXPECTED_TOOLS)}"
+        )
+        for name in PROJECT_WRITE_TOOLS:
+            assert tools[name]["annotations"]["readOnlyHint"] is False, name
+            required = set(tools[name]["inputSchema"].get("required", []))
+            assert "confirmProjectWrites" in required, name
+
+        observed_step = tools["swansong_observed_play_step"]
+        assert observed_step["annotations"]["readOnlyHint"] is False
+        assert set(observed_step["inputSchema"].get("required", [])) == {
+            "sessionID", "inputs", "frames", "confirmShareCapture",
+        }
+
+        denied = call(process, 3, {
             "romPath": str(ROM), "plan": neutral, "confirmShareCapture": False,
         })
         assert denied.get("isError") is True
@@ -85,7 +133,7 @@ def main() -> None:
         with tempfile.NamedTemporaryFile(suffix=".wsc") as invalid:
             invalid.write(b"not a SwanSong ROM")
             invalid.flush()
-            rejected = call(process, 3, {
+            rejected = call(process, 4, {
                 "romPath": invalid.name,
                 "plan": neutral,
                 "confirmShareCapture": True,
@@ -96,13 +144,13 @@ def main() -> None:
             "romPath": str(ROM), "confirmShareCapture": True,
         }
         neutral_a, png_a, wav_a = media(call(
-            process, 4, {**base_arguments, "plan": neutral}
-        ))
-        neutral_b, png_b, wav_b = media(call(
             process, 5, {**base_arguments, "plan": neutral}
         ))
+        neutral_b, png_b, wav_b = media(call(
+            process, 6, {**base_arguments, "plan": neutral}
+        ))
         acted, png_c, wav_c = media(call(
-            process, 6, {**base_arguments, "plan": controls}
+            process, 7, {**base_arguments, "plan": controls}
         ))
 
         assert neutral_a == neutral_b
@@ -114,8 +162,9 @@ def main() -> None:
         assert acted["audio"]["sampleFrames"] > 0
         assert acted["audio"]["finalWindowWAVByteCount"] == len(wav_c)
         print(
-            "PASS SwanSong MCP denied unconfirmed/invalid input, replayed exactly, "
-            "and returned divergent PNG+WAV media after controls"
+            "PASS SwanSong plugin advertised full Translation Lab/observed-play MCP, "
+            "denied unconfirmed/invalid input, replayed exactly, and returned "
+            "divergent PNG+WAV media after controls"
         )
     finally:
         if process.stdin is not None:

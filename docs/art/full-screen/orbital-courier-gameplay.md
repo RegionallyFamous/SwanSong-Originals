@@ -39,11 +39,17 @@ image-generation tool, then reviewed at native WonderSwan Color resolution.
 ## Production conversion
 
 `tools/build_orbital_gameplay_art.py` center-crops the generated master to the
-hardware aspect ratio, reduces it to the exact four-color palette, deduplicates
-its 8×8 tiles, and includes that complete screen as the brief opening image.
-The same master directs a native gameplay bank with 16×16 courier, parcel,
-airlock, floor, and bulkhead metatiles plus icon-only fuel, cargo, route,
-success, failure, and replay states.
+hardware aspect ratio and reduces it to the exact four-color palette. It writes
+the 224×144 opening source and a compact 128×64 production metatile sheet under
+`games/orbital-courier/assets/graphics/`. SwanSong SDK 0.3 passes both PNGs
+through Wonderful SuperFamiconv, generates typed tile/map/palette symbols, and
+tracks their hashes, ownership, and scene budgets. No production graphics are
+embedded in a handwritten C header or drawn through `swan/legacy.h`.
+
+The gameplay sheet contains native 16×16 courier, parcel, airlock, floor, and
+bulkhead metatiles plus icon-only fuel, cargo, route, success, failure, and
+replay states. Renderer lookups use regions of the generated tilemap, so flip
+deduplication never leaks converter-specific tile numbers into game code.
 
 The live game retains the tested 20×9 collision map and uses a 14×8 scrolling
 camera, so the visual redesign does not substitute generated maze geometry for

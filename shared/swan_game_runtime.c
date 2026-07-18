@@ -50,7 +50,6 @@ static uint8_t nearest_note(uint16_t hz) {
 }
 
 static void play_feedback(uint16_t hz, uint8_t volume, uint8_t duration_frames) {
-	swan_audio_init(&feedback_instrument, 1);
 	feedback_rows[0].channel[0].note = nearest_note(hz);
 	feedback_rows[0].channel[0].instrument = 0;
 	feedback_rows[0].channel[0].volume = volume > 15 ? 15 : volume;

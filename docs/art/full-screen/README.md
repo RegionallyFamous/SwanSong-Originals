@@ -6,8 +6,12 @@ SwanSong Originals uses the original **Yohaku** house style for all ten native
 - `*-gameplay-master.png` — high-resolution Imagegen gameplay composition;
 - `*-gameplay-native.png` — exact four-color 224×144 reduction;
 - `*-gameplay-atlas.png` — live sprite, metatile, meter, and result proof; and
-- `games/*/src/gameplay_art.h` — checked-in 2BPP ROM data linked to the master
-  by SHA-256.
+- `games/orbital-courier/assets/graphics/` and
+  `games/mote-sound-terminal/assets/graphics/` — native PNG sources compiled
+  and owned by the SwanSong SDK asset pipeline.
+
+The other eight titles temporarily retain checked-in `gameplay_art.h` 2BPP ROM
+data linked to their masters by SHA-256 until they receive the same migration.
 
 The stable style contract and benchmark scores live in
 [`artist-personas/yohaku/`](../../../artist-personas/yohaku/). Imagegen used the
@@ -90,7 +94,8 @@ only the deliberate detail reduction already performed by their live atlases.
    composition that leaves less than 82 percent for play.
 5. Reduce the master to its exact four-color 224×144 proof.
 6. Author a low-noise live tile bank from the master grammar; do not treat
-   generated board or maze geometry as game logic.
+   generated board or maze geometry as game logic. Store native PNG sources
+   under the game and let `swan assets` own conversion and resource identity.
 7. Render directly from the existing C state machine.
 8. Run tile-count, palette, provenance, no-terminal-call, route/puzzle, ROM,
    and emulator-frame tests.

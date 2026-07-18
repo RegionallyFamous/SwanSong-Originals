@@ -8,12 +8,6 @@ static uint8_t clamp_u8(int16_t value, uint8_t low, uint8_t high) {
 	return (uint8_t)value;
 }
 
-uint16_t mote_note_hz(uint8_t track, uint8_t step) {
-	static const uint16_t scale[8] = {196, 220, 247, 262, 294, 330, 392, 440};
-	uint8_t index = (uint8_t)((step * (track + 1) + track * 2) & 7);
-	return (uint16_t)(scale[index] + track * 24);
-}
-
 void mote_reset(mote_state_t *state) {
 	memset(state, 0, sizeof(*state));
 	state->tempo = 12;
@@ -47,12 +41,12 @@ void mote_step(mote_state_t *state, const mote_input_t *input,
 		mote_reset(state);
 		event->reset_session = true;
 		event->dirty = true;
+		return;
 	}
 	if (state->playing && ++state->tick >= state->tempo) {
 		state->tick = 0;
 		state->step = (uint8_t)((state->step + 1) & 15);
-		event->tone_hz = mote_note_hz(state->track, state->step);
-		event->tone_volume = 7;
+		event->play_note = true;
 		event->dirty = true;
 	}
 }
