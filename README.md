@@ -78,13 +78,13 @@ Locally and continuously validated package revisions are recorded in
 The [SwanSong SDK integration](docs/SDK-INTEGRATION.md) records the ten
 schema-v1 game manifests, deterministic play contracts, resource budgets, and
 migration lessons. Release builds use the content-addressed
-`vendor/swansong-sdk` v0.2.0 submodule. `SWANSONG_SDK_DIR` can still select
+`vendor/swansong-sdk` v0.3.1 submodule. `SWANSONG_SDK_DIR` can still select
 another SDK checkout for local compatibility testing.
 
 ## Repository map
 
 - `vendor/swansong-sdk/` — pinned SDK runtime, generator, and SwanSong tooling;
-- `shared/` — small anthology-side SDK adapters for the nine remaining legacy
+- `shared/` — small anthology-side SDK adapters for the eight remaining legacy
   renderers, semantic input helpers, and feedback audio;
 - `engine/` — retained pre-SDK engine source for migration reference only;
 - `games/` — ten independent cartridge projects;

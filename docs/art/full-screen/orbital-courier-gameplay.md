@@ -41,7 +41,7 @@ image-generation tool, then reviewed at native WonderSwan Color resolution.
 `tools/build_orbital_gameplay_art.py` center-crops the generated master to the
 hardware aspect ratio and reduces it to the exact four-color palette. It writes
 the 224×144 opening source and a compact 128×64 production metatile sheet under
-`games/orbital-courier/assets/graphics/`. SwanSong SDK 0.2 passes both PNGs
+`games/orbital-courier/assets/graphics/`. SwanSong SDK 0.3 passes both PNGs
 through Wonderful SuperFamiconv, generates typed tile/map/palette symbols, and
 tracks their hashes, ownership, and scene budgets. No production graphics are
 embedded in a handwritten C header or drawn through `swan/legacy.h`.

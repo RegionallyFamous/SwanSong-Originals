@@ -6,10 +6,11 @@ SwanSong Originals uses the original **Yohaku** house style for all ten native
 - `*-gameplay-master.png` — high-resolution Imagegen gameplay composition;
 - `*-gameplay-native.png` — exact four-color 224×144 reduction;
 - `*-gameplay-atlas.png` — live sprite, metatile, meter, and result proof; and
-- `games/orbital-courier/assets/graphics/` — native PNG sources compiled and
-  owned by the SwanSong SDK asset pipeline.
+- `games/orbital-courier/assets/graphics/` and
+  `games/mote-sound-terminal/assets/graphics/` — native PNG sources compiled
+  and owned by the SwanSong SDK asset pipeline.
 
-The other nine titles temporarily retain checked-in `gameplay_art.h` 2BPP ROM
+The other eight titles temporarily retain checked-in `gameplay_art.h` 2BPP ROM
 data linked to their masters by SHA-256 until they receive the same migration.
 
 The stable style contract and benchmark scores live in

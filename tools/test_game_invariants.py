@@ -99,7 +99,7 @@ def test_sdk_runtime_ownership():
     assert "all: engine" not in root_make
     for renderer in sorted((ROOT / "games").glob("*/src/gfx.c")):
         text = renderer.read_text()
-        if renderer.parent.parent.name == "orbital-courier":
+        if renderer.parent.parent.name in {"mote-sound-terminal", "orbital-courier"}:
             assert "#include <swan/legacy.h>" not in text, renderer
             assert '#include "swan_assets.h"' in text, renderer
             assert "swan_gfx_load_tiles(" in text, renderer

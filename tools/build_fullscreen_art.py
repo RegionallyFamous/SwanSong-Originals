@@ -614,6 +614,29 @@ def build_game(spec: GameSpec) -> None:
 		atlas.paste(preview, (x, y))
 	atlas.resize((atlas.width * 3, atlas.height * 3), Image.Resampling.NEAREST).save(atlas_path)
 
+	if spec.slug == "mote-sound-terminal":
+		asset_dir = ROOT / "games" / spec.slug / "assets" / "graphics"
+		asset_dir.mkdir(parents=True, exist_ok=True)
+		native.save(asset_dir / "intro.png")
+		gameplay = pal_image((112, 40), 1)
+		placements = {
+			"track_0": (0, 0), "track_1": (16, 0), "track_2": (32, 0),
+			"play": (48, 0), "pause": (64, 0),
+			"scope_a": (80, 0), "scope_b": (96, 0),
+			"beat_off": (64, 16), "beat_on": (72, 16),
+			"beat_now": (80, 16), "pip_full": (88, 16),
+			"pip_empty": (96, 16), "hud_bg": (104, 16),
+		}
+		for index in range(8):
+			placements[f"bar_{index}"] = (index * 8, 16)
+		for name, position in placements.items():
+			gameplay.paste(images[name], position)
+		gameplay.save(asset_dir / "gameplay.png")
+		(ROOT / "games" / spec.slug / "src" / "gameplay_art.h").unlink(
+			missing_ok=True)
+		print(f"{spec.slug}: SDK PNG intro and gameplay sheet")
+		return
+
 	asset_defs = "\n\n".join(
 		f"static const uint16_t __far art_{name}[] = {{\n{c_words(values)}\n}};"
 		for name, values in assets.items()

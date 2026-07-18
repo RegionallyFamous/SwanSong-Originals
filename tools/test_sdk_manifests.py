@@ -18,8 +18,8 @@ SCENARIO_ORDER = (
 SCENARIOS = set(SCENARIO_ORDER)
 MAX_PLAN_FRAMES = 1500  # About 20 seconds at the WonderSwan's 75 Hz cadence.
 MAX_PLAN_EVENTS = 96
-SDK_VERSION = "0.2.0"
-SDK_REVISION = "sha256:a9d93aa45ba8d1d5c5ce62cc04dd9f59692d7e0a849a899f6ceac15118b9b4d0"
+SDK_VERSION = "0.3.1"
+SDK_REVISION = "sha256:92c2f3b0823465c0d0b0d4e094ef3b2c89fcbf2e984a364cb1021e95e6043874"
 HOLD_INPUTS = {
     "harpoon-moon": {frozenset({"a"}), frozenset({"b"}), frozenset({"a", "b"})},
     "one-last-lap": {frozenset({"a"}), frozenset({"b"})},
@@ -36,6 +36,10 @@ AUDIO_SCENARIOS = {
     "rotate-dungeon": {"interaction", "success", "failure", "reset", "deterministic"},
     "one-last-lap": set(),
     "bug-witch": {"interaction", "success", "failure", "reset", "deterministic"},
+}
+SILENT_AUDIO_SCENARIOS = {
+    "mote-sound-terminal": {"reset"},
+    "orbital-courier": {"reset"},
 }
 EXPECTED = {
     "mote-sound-terminal": 1,
@@ -175,9 +179,17 @@ def main() -> None:
         plans: dict[str, dict[str, object]] = {}
         for scenario in scenarios:
             assert scenario["required_checks"], (slug, scenario["id"])
-            assert scenario.get("audio", False) is (
-                scenario["id"] in AUDIO_SCENARIOS[slug]
-            ), (slug, scenario["id"], "audio evidence declaration")
+            expected_audio = (
+                "silent" if scenario["id"] in SILENT_AUDIO_SCENARIOS.get(slug, set())
+                else "audible" if scenario["id"] in AUDIO_SCENARIOS[slug]
+                else "any"
+            )
+            declared_audio = scenario.get("audio_expectation")
+            if declared_audio is None:
+                declared_audio = "audible" if scenario.get("audio") is True else "any"
+            assert declared_audio == expected_audio, (
+                slug, scenario["id"], "audio evidence declaration"
+            )
             plan = (root / scenario["plan"]).resolve()
             plan.relative_to(root.resolve())
             plans[scenario["id"]] = validate_plan(plan, slug)

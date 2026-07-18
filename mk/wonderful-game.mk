@@ -26,7 +26,7 @@ GAME_OBJS := $(addprefix $(BUILDDIR)/,$(addsuffix .o,$(GAME_SOURCES_C) $(GENERAT
 SHARED_OBJS := $(BUILDDIR)/shared/swan_game_runtime.c.o
 OBJS := $(GAME_OBJS) $(SHARED_OBJS)
 DEPS := $(OBJS:.o=.d)
-ASSET_INPUTS := swan.toml $(shell find tests/play -type f 2>/dev/null)
+ASSET_INPUTS := swan.toml $(shell find assets tests/play -type f 2>/dev/null)
 SDK_TOOL_INPUTS := $(shell find -L $(SWANSONG_SDK_DIR)/python/swansong_sdk -type f)
 SDK_RUNTIME_INPUTS := $(shell find -L $(SWANSONG_SDK_DIR)/include \
 	$(SWANSONG_SDK_DIR)/src -type f) $(SWANSONG_SDK_DIR)/mk/runtime-library.mk

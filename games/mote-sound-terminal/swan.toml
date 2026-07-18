@@ -1,8 +1,8 @@
 schema_version = 1
 
 [sdk]
-version = "0.2.0"
-revision = "sha256:a9d93aa45ba8d1d5c5ce62cc04dd9f59692d7e0a849a899f6ceac15118b9b4d0"
+version = "0.3.1"
+revision = "sha256:92c2f3b0823465c0d0b0d4e094ef3b2c89fcbf2e984a364cb1021e95e6043874"
 
 [game]
 id = "mote-sound-terminal"
@@ -46,9 +46,43 @@ sprites_per_scanline = 0
 
 [[scenes]]
 id = "intro"
+assets = ["intro"]
 
 [[scenes]]
 id = "terminal"
+assets = ["gameplay", "track_0", "track_1", "track_2"]
+
+[[assets]]
+id = "intro"
+type = "fullscreen"
+source = "assets/graphics/intro.png"
+group = "intro"
+flip_dedupe = true
+
+[[assets]]
+id = "gameplay"
+type = "metatiles"
+source = "assets/graphics/gameplay.png"
+group = "terminal"
+flip_dedupe = true
+
+[[assets]]
+id = "track_0"
+type = "music"
+source = "assets/audio/track-0.toml"
+group = "terminal"
+
+[[assets]]
+id = "track_1"
+type = "music"
+source = "assets/audio/track-1.toml"
+group = "terminal"
+
+[[assets]]
+id = "track_2"
+type = "music"
+source = "assets/audio/track-2.toml"
+group = "terminal"
 
 [[play.scenarios]]
 id = "neutral"
@@ -85,10 +119,10 @@ audio = true
 [[play.scenarios]]
 id = "reset"
 title = "Terminal reset"
-goal = "Change terminal state and restore its fresh-session defaults."
+goal = "Change terminal state and restore its defaults at an exact silent reset boundary."
 plan = "tests/play/reset.json"
-required_checks = ["track and tempo first change", "reset restores defaults", "playback is active after reset"]
-audio = true
+required_checks = ["track and tempo first change", "reset restores defaults", "reset boundary is silent and playback-ready"]
+audio_expectation = "silent"
 
 [[play.scenarios]]
 id = "deterministic"
