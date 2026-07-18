@@ -57,4 +57,31 @@ for slug, game in games.items():
     assert game["controls"], slug
 print("PASS SwanSong playtester manifest describes ten game contracts")
 PY
+python3 - "$PLUGIN_DIR" <<'PY'
+import json
+import pathlib
+import sys
+
+plugin = pathlib.Path(sys.argv[1])
+manifest = json.loads((plugin / ".codex-plugin" / "plugin.json").read_text())
+skill = (plugin / "skills" / "play-swansong-games" / "SKILL.md").read_text()
+patterns = (
+    plugin
+    / "skills"
+    / "play-swansong-games"
+    / "references"
+    / "wwgp-design-patterns.md"
+).read_text()
+assert manifest["version"] == "0.3.0"
+assert "references/wwgp-design-patterns.md" in skill
+for required in (
+    "Dual-cluster gestures",
+    "Audio-led play",
+    "Suspend and persistence",
+    "Utility editor",
+    "Clean-room boundary",
+):
+    assert required in patterns, required
+print("PASS SwanSong playtester packages clean-room homebrew patterns")
+PY
 python3 "$PLUGIN_DIR/tests/test_live_mcp.py"
