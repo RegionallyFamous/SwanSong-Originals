@@ -1,8 +1,8 @@
 schema_version = 1
 
 [sdk]
-version = "0.3.1"
-revision = "sha256:92c2f3b0823465c0d0b0d4e094ef3b2c89fcbf2e984a364cb1021e95e6043874"
+version = "0.4.0"
+revision = "sha256:4a08d6fa29bf49947576292574d0d868003add6537e01aa0438c4b6eedb85ffe"
 
 [game]
 id = "rotate-dungeon"
@@ -51,6 +51,9 @@ id = "room"
 [[scenes]]
 id = "result"
 
+[play]
+ready_frames = 120
+
 [[play.scenarios]]
 id = "neutral"
 title = "Neutral boot"
@@ -60,18 +63,18 @@ required_checks = ["room, key, and exit are visible", "player is visible", "no c
 
 [[play.scenarios]]
 id = "interaction"
-title = "Rotation controls"
-goal = "Move, rotate the room, and reset its state."
+title = "Room-state rotation"
+goal = "Move, rotate the room topology while the display stays landscape, and reset its state."
 plan = "tests/play/interaction.json"
-required_checks = ["movement works", "rotation changes geometry", "orientation icon changes", "reset restores room"]
+required_checks = ["movement works", "rotation changes geometry", "room-state orientation icon changes", "landscape display remains stable", "reset restores room"]
 audio = true
 
 [[play.scenarios]]
 id = "success"
-title = "First key utility"
-goal = "Rotate the room, navigate its open path, and collect the key."
+title = "Five-room escape"
+goal = "Use both room topologies to collect every key and escape all five rooms."
 plan = "tests/play/success.json"
-required_checks = ["orientation changes", "rotated path permits movement", "key is collected"]
+required_checks = ["all five room pips fill", "both room-state orientations permit movement", "every key is collected", "completion result appears"]
 audio = true
 
 [[play.scenarios]]
@@ -88,12 +91,12 @@ title = "Room reset"
 goal = "Collect the key and reset the room."
 plan = "tests/play/reset.json"
 required_checks = ["key is first collected", "reset returns the player to the entrance", "orientation and key return to defaults"]
-audio = true
+audio_expectation = "silent"
 
 [[play.scenarios]]
 id = "deterministic"
 title = "Deterministic rotation replay"
-goal = "Replay the first-key route from a fresh boot."
+goal = "Replay the complete five-room escape from a fresh boot."
 plan = "tests/play/deterministic.json"
-required_checks = ["orientation, player, and key state match the success path", "frame and WAV evidence match on repeated execution"]
+required_checks = ["completion state matches the success path", "frame and WAV evidence match on repeated execution"]
 audio = true

@@ -35,6 +35,11 @@ void swan_scene_update(swan_scene_id_t scene, const swan_frame_t *frame) {
 		return;
 	}
 	if (scene == SWAN_SCENE_RESULT) {
+		if ((frame->session_tick & 31u) == 0) {
+			uint16_t result_tone = state.result == LAP_RESULT_COOPERATIVE ? 760u :
+				state.result == LAP_RESULT_SOLO ? 620u : 180u;
+			swan_game_audio_beep(result_tone, 12);
+		}
 		if (SWAN_GAME_ACTION_PRESSED(frame->input, SWAN_ACTION_ACCELERATE_OR_REPLAY)) {
 			lap_reset(&state);
 			(void)swan_core_request_scene(SWAN_SCENE_RACE, 0);
@@ -46,7 +51,7 @@ void swan_scene_update(swan_scene_id_t scene, const swan_frame_t *frame) {
 	model_input.lane_direction = swan_game_primary_axis(frame->input->pressed);
 	model_input.accelerate = SWAN_GAME_ACTION_HELD(frame->input, SWAN_ACTION_ACCELERATE_OR_REPLAY);
 	model_input.brake = SWAN_GAME_ACTION_HELD(frame->input, SWAN_ACTION_BRAKE);
-	model_input.tow = SWAN_GAME_ACTION_PRESSED(frame->input, SWAN_ACTION_TOW);
+	model_input.tow = SWAN_GAME_ACTION_HELD(frame->input, SWAN_ACTION_TOW);
 	lap_step(&state, &model_input, frame->session_tick, &event);
 	if (event.tone_frames)
 		swan_game_audio_beep(event.tone_hz, event.tone_frames);

@@ -5,6 +5,8 @@
 #include "gameplay_art.h"
 #include "model.h"
 
+static bool background_ready;
+
 static const uint16_t __far *wave_for(uint8_t level) {
 	switch (level & 7) {
 		case 0: return art_wave_0;
@@ -31,6 +33,7 @@ void gfx_show_intro(void) {
 
 void gfx_init(void) {
 	rf_gfx_load(game_tiles, sizeof(game_tiles), game_palette, art_hud_bg[0]);
+	background_ready = false;
 }
 
 void gfx_render(uint16_t frequency, uint8_t gain, uint16_t time,
@@ -39,7 +42,10 @@ void gfx_render(uint16_t frequency, uint8_t gain, uint16_t time,
 	uint16_t target = radio_target_for(clue < 3 ? clue : 2);
 	uint16_t distance = frequency > target ? frequency - target : target - frequency;
 
-	rf_gfx_fill(art_panel[0], 0, 0, 28, 18);
+	if (!background_ready) {
+		rf_gfx_fill(art_panel[0], 0, 0, 28, 18);
+		background_ready = true;
+	}
 	for (x = 0; x < 3; ++x) {
 		if (x < clue) rf_gfx_put_image((uint8_t)(1 + x * 3), 0, clue_for(x), 2, 2);
 		else rf_gfx_put_tile((uint8_t)(1 + x * 3), 0, art_pip_empty[0]);

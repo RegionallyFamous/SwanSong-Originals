@@ -45,8 +45,9 @@ void swan_scene_update(swan_scene_id_t scene, const swan_frame_t *frame) {
 	model_input.replay = model_input.lock;
 	radio_step(&state, &model_input, &event);
 	if (event.tone_frames)
-		swan_game_audio_beep(110, event.tone_frames ? event.tone_frames : 8);
-	if (event.dirty || (frame->session_tick & 7u) == 0) swan_core_invalidate();
+		swan_game_audio_beep(event.tone_hz, event.tone_frames);
+	if (event.dirty || (state.result == RADIO_RESULT_PLAYING &&
+		(frame->session_tick & 15u) == 0)) swan_core_invalidate();
 	if (event.reset_session)
 		(void)swan_core_request_scene(SWAN_SCENE_TUNING, 0);
 	else if (scene == SWAN_SCENE_TUNING && state.result != RADIO_RESULT_PLAYING)

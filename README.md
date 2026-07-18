@@ -33,11 +33,11 @@ Detailed rules and controls are in [docs/CONCEPTS.md](docs/CONCEPTS.md).
 
 ## Completion and testing
 
-The current software scope is complete and tested as ten short-session games. The
-test suite covers cartridge metadata, UI bounds, authored puzzle/route
-solvability, deterministic success and failure paths, reset behavior, native
-art provenance/tilemap integrity, every full-screen graphical renderer, and
-rendered SwanSong startup for all ten ROMs.
+The current software scope is complete and tested as ten short-session games.
+The test suite covers cartridge metadata, UI bounds, authored puzzle/route
+solvability, complete deterministic endings, failure and reset paths, native
+art provenance/tilemap integrity, every full-screen graphical renderer, and 61
+fresh-boot SwanSong scenarios across all ten ROMs.
 
 ```sh
 make clean test
@@ -45,10 +45,10 @@ make smoke
 ```
 
 `make test` builds and structurally verifies every ROM, then runs the host-side
-invariant, gameplay-path, and native-art suites. `make smoke` additionally
-launches every ROM through SwanSong's own engine and requires a native rendered
-frame. The
-retained evidence and remaining hardware limits are recorded in
+invariant, gameplay-path, and native-art suites. `make smoke` additionally runs
+every declared scenario through SwanSong, checks visual and audio evidence,
+requires distinct success/failure/reset outcomes, and repeats the success plan
+bit-exactly. The retained evidence and remaining hardware limits are recorded in
 [docs/STATUS.md](docs/STATUS.md).
 
 For agent-driven black-box play rather than boot-only smoke testing, install the
@@ -78,7 +78,7 @@ Locally and continuously validated package revisions are recorded in
 The [SwanSong SDK integration](docs/SDK-INTEGRATION.md) records the ten
 schema-v1 game manifests, deterministic play contracts, resource budgets, and
 migration lessons. Release builds use the content-addressed
-`vendor/swansong-sdk` v0.3.1 submodule. `SWANSONG_SDK_DIR` can still select
+`vendor/swansong-sdk` v0.4.0 submodule. `SWANSONG_SDK_DIR` can still select
 another SDK checkout for local compatibility testing.
 
 ## Repository map

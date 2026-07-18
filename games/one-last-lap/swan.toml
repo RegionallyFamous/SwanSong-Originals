@@ -1,8 +1,8 @@
 schema_version = 1
 
 [sdk]
-version = "0.3.1"
-revision = "sha256:92c2f3b0823465c0d0b0d4e094ef3b2c89fcbf2e984a364cb1021e95e6043874"
+version = "0.4.0"
+revision = "sha256:4a08d6fa29bf49947576292574d0d868003add6537e01aa0438c4b6eedb85ffe"
 
 [game]
 id = "one-last-lap"
@@ -24,8 +24,6 @@ rtc = false
 [controls.actions]
 left = ["X4", "Y1"]
 right = ["X2", "Y3"]
-up = ["X3", "Y2"]
-down = ["X1", "Y4"]
 accelerate_or_replay = ["A"]
 brake = ["B"]
 tow = ["START"]
@@ -51,6 +49,9 @@ id = "race"
 [[scenes]]
 id = "result"
 
+[play]
+ready_frames = 120
+
 [[play.scenarios]]
 id = "neutral"
 title = "Neutral boot"
@@ -61,34 +62,44 @@ required_checks = ["racer, rivals, and hazards are visible", "battery is visible
 [[play.scenarios]]
 id = "interaction"
 title = "Race controls"
-goal = "Change lanes, accelerate, brake, and exercise the tow control."
+goal = "Change lanes, accelerate, brake, and confirm the tow signal waits for the lap-two rescue zone."
 plan = "tests/play/interaction.json"
-required_checks = ["lane changes", "speed changes", "battery changes", "rivals and hazards affect play"]
+required_checks = ["lane changes", "speed and battery change", "tow does not trigger on lap one", "rivals and hazards affect play"]
 
 [[play.scenarios]]
 id = "success"
-title = "Racing utility outcome"
-goal = "Choose a lane, accelerate, and make sustained race progress."
+title = "Cooperative finish"
+goal = "Signal for a tow, rescue the stranded rival during lap two, and finish all three laps together."
 plan = "tests/play/success.json"
-required_checks = ["lane changes", "speed increases", "lap progress advances", "rivals or hazards visibly affect play"]
+required_checks = ["lap-two tow is accepted", "the rescue marker stays visible", "all three laps finish", "cooperative ending appears"]
+audio = true
+
+[[play.scenarios]]
+id = "solo"
+title = "Solo finish"
+goal = "Finish all three laps without towing the stranded rival."
+plan = "tests/play/solo.json"
+required_checks = ["the stranded rival is not rescued", "all three laps finish", "solo ending appears", "solo ending differs from cooperative ending"]
+audio = true
 
 [[play.scenarios]]
 id = "failure"
 title = "Battery failure"
-goal = "Accelerate until the racer exhausts its battery."
+goal = "Hold throttle and brake together until sustained strain exhausts the battery."
 plan = "tests/play/failure.json"
-required_checks = ["battery decreases under racing load", "battery result appears", "result remains stable"]
+required_checks = ["conflicting throttle and brake drain the battery", "battery result appears", "result remains stable"]
 
 [[play.scenarios]]
 id = "reset"
 title = "Race replay"
-goal = "Reach battery failure and replay the race."
+goal = "Reach the throttle-and-brake battery failure and replay the race."
 plan = "tests/play/reset.json"
 required_checks = ["battery result is reached", "replay restores lap one", "battery, lane, and speed reset"]
 
 [[play.scenarios]]
 id = "deterministic"
-title = "Deterministic race replay"
-goal = "Replay the sustained progress path from a fresh boot."
+title = "Deterministic cooperative replay"
+goal = "Replay the complete rescue-and-finish path from a fresh boot."
 plan = "tests/play/deterministic.json"
-required_checks = ["lap, progress, rivals, and battery match the success path", "frame evidence matches on repeated execution"]
+required_checks = ["tow state, finish, and cooperative ending match the success path", "frame and audio evidence match on repeated execution"]
+audio = true

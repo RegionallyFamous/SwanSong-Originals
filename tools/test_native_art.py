@@ -96,7 +96,7 @@ def main() -> None:
                 assert all(asset["converter"] == "swansong-toml-audio"
                            for asset in report["assets"] if asset["type"] == "music")
                 assert "swan_game_audio_" not in main_source
-                assert "swan_audio_play_music(&note_song)" in main_source
+                assert "swan_audio_play_music(&active_song)" in main_source
                 assert "swan_asset_track_0_rows" in main_source
             assert '"Imagegen source SHA-256: ' not in gfx_source
             assert "#include <swan/legacy.h>" not in gfx_source

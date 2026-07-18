@@ -11,7 +11,7 @@
 #include "model.h"
 
 static mote_state_t state;
-static swan_song_t SWAN_FAR note_song;
+static swan_song_t SWAN_FAR active_song;
 
 static const swan_audio_row_t SWAN_FAR *rows_for_track(uint8_t track) {
 	if (track == 0) return swan_asset_track_0_rows;
@@ -19,12 +19,12 @@ static const swan_audio_row_t SWAN_FAR *rows_for_track(uint8_t track) {
 	return swan_asset_track_2_rows;
 }
 
-static void play_note(void) {
-	note_song.rows = &rows_for_track(state.track)[state.step];
-	note_song.row_count = 1;
-	note_song.frames_per_row_q8 = UINT16_MAX;
-	note_song.loop = true;
-	swan_audio_play_music(&note_song);
+static void start_track(void) {
+	active_song.rows = rows_for_track(state.track);
+	active_song.row_count = 16;
+	active_song.frames_per_row_q8 = (uint16_t)(state.tempo * 256u);
+	active_song.loop = true;
+	swan_audio_play_music(&active_song);
 }
 
 void swan_game_boot(void) {
@@ -46,6 +46,7 @@ void swan_scene_enter(swan_scene_id_t scene, uint16_t argument) {
 	if (scene == SWAN_SCENE_TERMINAL) {
 		gfx_init();
 		swan_core_reset_session();
+		start_track();
 	}
 	swan_core_invalidate();
 }
@@ -53,6 +54,9 @@ void swan_scene_enter(swan_scene_id_t scene, uint16_t argument) {
 void swan_scene_update(swan_scene_id_t scene, const swan_frame_t *frame) {
 	mote_input_t model_input = {0};
 	mote_event_t event;
+	uint8_t previous_track;
+	uint8_t previous_tempo;
+	bool previous_playing;
 
 	if (scene == SWAN_SCENE_INTRO) {
 		if (swan_game_intro_complete(frame))
@@ -69,13 +73,26 @@ void swan_scene_update(swan_scene_id_t scene, const swan_frame_t *frame) {
 	model_input.toggle_play = SWAN_GAME_ACTION_PRESSED(frame->input, SWAN_ACTION_TOGGLE_PLAY);
 	model_input.toggle_scope = SWAN_GAME_ACTION_PRESSED(frame->input, SWAN_ACTION_TOGGLE_SCOPE);
 	model_input.reset = SWAN_GAME_ACTION_PRESSED(frame->input, SWAN_ACTION_RESET);
+	previous_track = state.track;
+	previous_tempo = state.tempo;
+	previous_playing = state.playing;
 	mote_step(&state, &model_input, &event);
-	if (event.sound_off) swan_audio_stop_all();
 	if (event.reset_session) {
 		swan_core_reset_session();
 		gfx_init();
+		start_track();
+	} else {
+		bool sequence_changed = state.track != previous_track ||
+			state.tempo != previous_tempo;
+		if (sequence_changed)
+			start_track();
+		if (!state.playing) {
+			if (sequence_changed || previous_playing)
+				(void)swan_audio_pause();
+		} else if (!previous_playing && !sequence_changed) {
+				if (!swan_audio_resume()) start_track();
+		}
 	}
-	if (event.play_note) play_note();
 	if (event.dirty) swan_core_invalidate();
 }
 
@@ -84,7 +101,8 @@ void swan_scene_render(swan_scene_id_t scene) {
 		gfx_show_intro();
 		return;
 	}
-	gfx_render(state.track, state.playing, state.tempo, state.scope, state.step);
+	gfx_render(state.track, state.playing, state.tempo, state.scope, state.step,
+		swan_audio_voices());
 }
 
 void swan_scene_exit(swan_scene_id_t scene) {

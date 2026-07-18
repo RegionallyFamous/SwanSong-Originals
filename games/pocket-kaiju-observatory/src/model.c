@@ -27,6 +27,13 @@ void kaiju_reset(kaiju_state_t *state) {
 	state->random_state = KAIJU_RANDOM_SEED;
 }
 
+bool kaiju_camera_in_range(uint8_t camera, uint8_t kaiju, bool zoom) {
+	uint8_t distance = camera > kaiju ? camera - kaiju : kaiju - camera;
+	uint8_t low = zoom ? 6 : 3;
+	uint8_t high = zoom ? 10 : 7;
+	return distance >= low && distance <= high;
+}
+
 void kaiju_step(kaiju_state_t *state, const kaiju_input_t *input,
 	uint32_t session_tick, kaiju_event_t *event) {
 	memset(event, 0, sizeof(*event));
@@ -52,12 +59,8 @@ void kaiju_step(kaiju_state_t *state, const kaiju_input_t *input,
 		event->dirty = true;
 	}
 	if (input->photograph) {
-		uint8_t distance = state->camera > state->kaiju ?
-			state->camera - state->kaiju : state->kaiju - state->camera;
-		uint8_t low = state->zoom ? 6 : 3;
-		uint8_t high = state->zoom ? 10 : 7;
 		state->disturbance = clamp_u8((int16_t)state->disturbance + 24, 0, 100);
-		if (distance >= low && distance <= high) {
+		if (kaiju_camera_in_range(state->camera, state->kaiju, state->zoom)) {
 			state->evidence |= (uint8_t)(1u << state->behavior);
 			event->tone_hz = 700;
 			event->tone_frames = 8;

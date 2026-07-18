@@ -24,13 +24,6 @@ SWIFT_DIR=${SWAN_PLAYTEST_SWIFT_DIR:-$SWANSONG_ROOT/.build/playtest-swift}
 TEMP_ROOT=$(mktemp -d "${TMPDIR:-/tmp}/swansong-originals-smoke.XXXXXX")
 trap 'rm -rf "$TEMP_ROOT"' EXIT INT TERM
 
-printf '%s\n' \
-    '{' \
-    '  "schema": "swan-song-frame-input-plan-v1",' \
-    '  "totalFrames": 120,' \
-    '  "events": [{"frameIndex": 0, "inputs": []}]' \
-    '}' >"$TEMP_ROOT/boot-plan.json"
-
 "$SWANSONG_ROOT/Scripts/build-engine.sh" >/dev/null
 SWAN_ARES_ENGINE_DIR="$ENGINE_DIR" \
     "$SWANSONG_ROOT/Scripts/swift-package.sh" build \
@@ -40,32 +33,85 @@ SWAN_ARES_ENGINE_DIR="$ENGINE_DIR" \
 RUNNER="$SWIFT_DIR/debug/SwanSongRouteRunner"
 
 for rom in "$@"; do
-    name=$(basename "$rom")
-    report="$TEMP_ROOT/$name.json"
-    capture="$TEMP_ROOT/$name.png"
-    SWAN_ARES_ENGINE_DIR="$ENGINE_DIR" "$RUNNER" playtest-plan \
-        --enable-debug-tools \
-        --rom "$rom" \
-        --plan "$TEMP_ROOT/boot-plan.json" \
-        --output "$report" \
-        --capture "$capture"
-    python3 - "$report" "$capture" <<'PY'
+    stem=$(basename "${rom%.*}")
+    slug=$(printf '%s' "$stem" | tr '_' '-')
+    manifest="$ROOT/games/$slug/swan.toml"
+    if [ ! -f "$manifest" ]; then
+        echo "FAIL no SwanSong manifest for $rom" >&2
+        exit 1
+    fi
+    scenarios="$TEMP_ROOT/$stem.scenarios"
+    outcomes="$TEMP_ROOT/$stem.outcomes"
+    : >"$outcomes"
+    python3 - "$manifest" >"$scenarios" <<'PY'
+import pathlib
+import sys
+import tomllib
+
+manifest = pathlib.Path(sys.argv[1])
+with manifest.open("rb") as handle:
+    data = tomllib.load(handle)
+for scenario in data["play"]["scenarios"]:
+    expectation = scenario.get("audio_expectation")
+    if expectation is None:
+        expectation = "audible" if scenario.get("audio") is True else "any"
+    print(f"{scenario['id']}|{scenario['plan']}|{expectation}")
+PY
+    while IFS='|' read -r scenario relative_plan audio_expectation; do
+        plan="$ROOT/games/$slug/$relative_plan"
+        report="$TEMP_ROOT/$stem-$scenario.json"
+        capture="$TEMP_ROOT/$stem-$scenario.png"
+        SWAN_ARES_ENGINE_DIR="$ENGINE_DIR" "$RUNNER" playtest-plan \
+            --enable-debug-tools \
+            --rom "$rom" \
+            --plan "$plan" \
+            --output "$report" \
+            --capture "$capture"
+        evidence=$(python3 - "$report" "$capture" "$plan" "$audio_expectation" <<'PY'
 import json
 import pathlib
 import sys
 
 report = json.loads(pathlib.Path(sys.argv[1]).read_text())
 capture = pathlib.Path(sys.argv[2])
+plan = json.loads(pathlib.Path(sys.argv[3]).read_text())
+audio_expectation = sys.argv[4]
 assert report["schema"] == "swan-song-playtest-report-v1"
 assert report["engineBackend"] != "stub"
-assert report["totalFrames"] == 120
-assert report["finalFrameNumber"] >= 120
+assert report["totalFrames"] == plan["totalFrames"]
+assert report["finalFrameNumber"] >= plan["totalFrames"]
 assert len(report["finalGameRasterSHA256"]) == 64
 assert len(report["capturePNG_SHA256"]) == 64
 assert report["persistencePolicy"] == "isolated-empty-v1"
 assert report["rtcSeedUnixSeconds"] == 946684800
 assert report["audio"]["sampleFrames"] > 0
 assert capture.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
+peak = report["audio"].get("finalWindowPeakAbsoluteSample", 0.0)
+if audio_expectation == "audible":
+    assert peak > 0.0001, (sys.argv[1], peak)
+elif audio_expectation == "silent":
+    assert peak <= 0.0001, (sys.argv[1], peak)
+print(f"{report['finalGameRasterSHA256']}|{report['audio']['pcmFloatSHA256']}")
 PY
-    printf 'OK   %s reached a rendered SwanSong frame\n' "$rom"
+        )
+        case "$scenario" in
+            success|failure|reset|deterministic)
+                printf '%s|%s\n' "$scenario" "$evidence" >>"$outcomes"
+                ;;
+        esac
+        printf 'OK   %s / %s completed in SwanSong\n' "$slug" "$scenario"
+    done <"$scenarios"
+    python3 - "$outcomes" <<'PY'
+import pathlib
+import sys
+
+rows = [line.split("|") for line in pathlib.Path(sys.argv[1]).read_text().splitlines()]
+assert [row[0] for row in rows] == ["success", "failure", "reset", "deterministic"], rows
+assert len({row[1] for row in rows[:3]}) == 3, (
+    "success, failure, and reset must end in visibly distinct states", rows
+)
+assert rows[0][1:] == rows[3][1:], (
+    "success and deterministic replays must produce the same frame and audio", rows
+)
+PY
 done

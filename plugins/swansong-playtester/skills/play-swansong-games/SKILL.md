@@ -25,6 +25,9 @@ reproduce, or validate a SwanSong Originals or SDK-built ROM.
    visible game state; do not claim success from source code, a boot, a changing
    hash, or a host-side model alone. For audio mechanics, also inspect or listen
    to the returned final-window WAV and compare its audio metrics and hash.
+   A documented success must reach the actual result or ending state; a first
+   pickup, lock, tag, room, lap, photo, or legal move is interaction evidence,
+   not completion evidence.
 4. Maintain one accumulated `swan-song-frame-input-plan-v1` per game. Each
    ordinary press is a native SwanSong input held for one frame followed by at
    least two neutral frames. Preserve declared press durations and same-frame
@@ -45,14 +48,20 @@ reproduce, or validate a SwanSong Originals or SDK-built ROM.
 8. Repeat an unchanged plan once when determinism matters; its capture hash and
    report must match. Report the complete plan and SwanSong evidence metadata
    for every failure.
-9. After a title, turn repeated friction into one concrete SDK API, asset rule,
+9. When a scheduled transition appears ignored, separate input delivery from
+   game sampling. First run SwanSong's exact input-frame bridge fixture; then
+   compare host frame indices with the game's session/update tick or profiler
+   trace. A renderer that misses VBlanks can receive the button correctly while
+   never sampling it. Preserve both observations in the regression.
+10. After a title, turn repeated friction into one concrete SDK API, asset rule,
    recipe improvement, documentation item, or regression test. Keep title art
    direction and authored content outside the framework.
 
 ## Verdict rules
 
 - **Pass:** observed controls and required state transitions agree with the
-  game contract, and the tested completion/reset path works.
+  game contract, the real documented ending or utility outcome is visible,
+  and the tested completion/reset path works.
 - **Pass with risk:** the exercised path works, but a required check was not
   reached. Name the untested check; never silently convert coverage into proof.
 - **Fail:** a visible state contradicts the contract, input produces no expected

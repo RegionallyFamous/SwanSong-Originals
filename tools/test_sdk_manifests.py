@@ -16,30 +16,47 @@ SCENARIO_ORDER = (
     "neutral", "interaction", "success", "failure", "reset", "deterministic"
 )
 SCENARIOS = set(SCENARIO_ORDER)
-MAX_PLAN_FRAMES = 1500  # About 20 seconds at the WonderSwan's 75 Hz cadence.
-MAX_PLAN_EVENTS = 96
-SDK_VERSION = "0.3.1"
-SDK_REVISION = "sha256:92c2f3b0823465c0d0b0d4e094ef3b2c89fcbf2e984a364cb1021e95e6043874"
+EXTRA_SCENARIOS = {"one-last-lap": ("solo",)}
+MAX_PLAN_FRAMES = 2700  # About 36 seconds at the WonderSwan's 75 Hz cadence.
+MAX_PLAN_EVENTS = 192
+SDK_VERSION = "0.4.0"
+SDK_REVISION = "sha256:4a08d6fa29bf49947576292574d0d868003add6537e01aa0438c4b6eedb85ffe"
 HOLD_INPUTS = {
     "harpoon-moon": {frozenset({"a"}), frozenset({"b"}), frozenset({"a", "b"})},
-    "one-last-lap": {frozenset({"a"}), frozenset({"b"})},
-    "pocket-kaiju-observatory": {frozenset({"b"})},
+    "one-last-lap": {
+        frozenset({"a"}),
+        frozenset({"b"}),
+        frozenset({"x2"}),
+        frozenset({"a", "b"}),
+        frozenset({"a", "start"}),
+    },
+    "pocket-kaiju-observatory": {
+        frozenset({"a"}),
+        frozenset({"b"}),
+        frozenset({"start"}),
+        frozenset({"x2"}),
+    },
 }
 AUDIO_SCENARIOS = {
     "mote-sound-terminal": SCENARIOS,
     "orbital-courier": {"interaction", "success", "failure", "deterministic"},
-    "scrapframe-garage": {"interaction", "success", "failure", "reset", "deterministic"},
-    "radio-ghost": {"interaction", "success", "failure", "reset", "deterministic"},
+    "scrapframe-garage": {"interaction", "success", "failure", "deterministic"},
+    "radio-ghost": {"interaction", "success", "failure", "deterministic"},
     "harpoon-moon": {"interaction", "success", "deterministic"},
-    "turncoat-tactics": set(),
-    "pocket-kaiju-observatory": {"interaction", "success", "failure", "reset", "deterministic"},
-    "rotate-dungeon": {"interaction", "success", "failure", "reset", "deterministic"},
-    "one-last-lap": set(),
-    "bug-witch": {"interaction", "success", "failure", "reset", "deterministic"},
+    "turncoat-tactics": {"interaction", "success", "failure", "deterministic"},
+    "pocket-kaiju-observatory": {"interaction", "success", "failure", "deterministic"},
+    "rotate-dungeon": {"interaction", "success", "failure", "deterministic"},
+    "one-last-lap": {"success", "solo", "deterministic"},
+    "bug-witch": {"interaction", "success", "failure", "deterministic"},
 }
 SILENT_AUDIO_SCENARIOS = {
-    "mote-sound-terminal": {"reset"},
+    "mote-sound-terminal": set(),
     "orbital-courier": {"reset"},
+    "scrapframe-garage": {"reset"},
+    "radio-ghost": {"reset"},
+    "pocket-kaiju-observatory": {"reset"},
+    "rotate-dungeon": {"reset"},
+    "bug-witch": {"reset"},
 }
 EXPECTED = {
     "mote-sound-terminal": 1,
@@ -60,6 +77,10 @@ PHYSICAL_DIRECTIONS = {
     "down": ("X1", "Y4"),
 }
 SPECIAL_DIRECTION_ACTIONS = {
+    "harpoon-moon": {
+        "left": PHYSICAL_DIRECTIONS["left"],
+        "right": PHYSICAL_DIRECTIONS["right"],
+    },
     "bug-witch": {
         "previous_socket": PHYSICAL_DIRECTIONS["left"],
         "next_socket": PHYSICAL_DIRECTIONS["right"],
@@ -72,6 +93,14 @@ SPECIAL_DIRECTION_ACTIONS = {
         # The model increases tempo in the helper's positive/down direction.
         "tempo_up": PHYSICAL_DIRECTIONS["down"],
         "tempo_down": PHYSICAL_DIRECTIONS["up"],
+    },
+    "one-last-lap": {
+        "left": PHYSICAL_DIRECTIONS["left"],
+        "right": PHYSICAL_DIRECTIONS["right"],
+    },
+    "pocket-kaiju-observatory": {
+        "left": PHYSICAL_DIRECTIONS["left"],
+        "right": PHYSICAL_DIRECTIONS["right"],
     },
     "radio-ghost": {
         "tune_down": PHYSICAL_DIRECTIONS["left"],
@@ -100,6 +129,13 @@ def validate_plan(path: Path, slug: str) -> dict[str, object]:
         path, len(plan["events"]), MAX_PLAN_EVENTS
     )
     assert plan["events"][0] == {"frameIndex": 0, "inputs": []}, path
+    active_frames = [
+        event["frameIndex"] for event in plan["events"] if event["inputs"]
+    ]
+    if active_frames:
+        assert active_frames[0] >= 120, (
+            path, active_frames[0], "gameplay input occurs before the scene-ready window"
+        )
     for event in plan["events"]:
         frame = event["frameIndex"]
         inputs = event["inputs"]
@@ -137,6 +173,7 @@ def main() -> None:
         game = manifest["game"]
         cartridge = manifest["cartridge"]
         actions = manifest["controls"]["actions"]
+        ready_frames = manifest["play"]["ready_frames"]
         scenarios = manifest["play"]["scenarios"]
         budgets = manifest["budgets"]
 
@@ -154,11 +191,14 @@ def main() -> None:
         assert cartridge["rtc"] is wonderful["rtc"] is False, slug
         assert game["hardware"] == "color-required" and wonderful["color"] is True, slug
         assert actions and len(actions) <= 16, slug
+        assert ready_frames == 120, slug
         expected_directions = SPECIAL_DIRECTION_ACTIONS.get(slug, PHYSICAL_DIRECTIONS)
         for action, inputs in expected_directions.items():
             assert tuple(actions[action]) == inputs, (slug, action, actions[action])
-        assert len(scenarios) == len(SCENARIOS), slug
-        assert [item["id"] for item in scenarios] == list(SCENARIO_ORDER), slug
+        expected_order = list(SCENARIO_ORDER)
+        for extra in EXTRA_SCENARIOS.get(slug, ()):
+            expected_order.insert(expected_order.index("failure"), extra)
+        assert [item["id"] for item in scenarios] == expected_order, slug
         assert budgets["rom_bytes"] <= 8 * 1024 * 1024, slug
         assert cartridge["game_id"] not in seen_ids, slug
         seen_ids.add(cartridge["game_id"])
@@ -194,6 +234,9 @@ def main() -> None:
             plan.relative_to(root.resolve())
             plans[scenario["id"]] = validate_plan(plan, slug)
         assert plans["deterministic"] == plans["success"], slug
+        assert plans["success"] != plans["failure"], slug
+        assert plans["success"] != plans["reset"], slug
+        assert plans["failure"] != plans["reset"], slug
         if slug == "orbital-courier":
             exercised = {
                 event["inputs"][0]
@@ -213,7 +256,7 @@ def main() -> None:
         if rom is not None:
             assert rom.stat().st_size <= budgets["rom_bytes"], slug
 
-    print("PASS ten SDK manifests and sixty fresh-boot SwanSong frame plans are consistent")
+    print("PASS ten SDK manifests and sixty-one fresh-boot SwanSong frame plans are consistent")
 
 
 if __name__ == "__main__":

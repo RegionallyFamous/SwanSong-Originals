@@ -6,6 +6,7 @@ from __future__ import annotations
 from collections import deque
 from itertools import product
 from pathlib import Path
+import json
 import re
 
 
@@ -162,6 +163,54 @@ def test_rotate_rooms():
                 queue.append(state)
         assert solved, f"Rotate Dungeon room {room + 1} is unsolvable"
 
+    success_path = ROOT / "games/rotate-dungeon/tests/play/success.json"
+    deterministic_path = ROOT / "games/rotate-dungeon/tests/play/deterministic.json"
+    assert success_path.read_bytes() == deterministic_path.read_bytes()
+    plan = json.loads(success_path.read_text())
+    room = x = y = 0
+    x = y = 1
+    vertical = has_key = False
+    input_actions = {
+        "start": "rotate", "x3": "up", "x2": "right",
+        "x1": "down", "x4": "left",
+    }
+    actions = [input_actions[event["inputs"][0]] for event in plan["events"]
+               if event["inputs"]]
+    for action in actions:
+        if action == "rotate":
+            vertical = not vertical
+            if blocked(room, vertical, x, y):
+                x = y = 1
+        else:
+            dx, dy = {
+                "up": (0, -1), "right": (1, 0),
+                "down": (0, 1), "left": (-1, 0),
+            }[action]
+            if not blocked(room, vertical, x + dx, y + dy):
+                x += dx
+                y += dy
+        has_key = has_key or (x, y) == (2 + room, 6 - (room & 1))
+        if has_key and (x, y) == (10, 1):
+            room += 1
+            if room < 5:
+                x = y = 1
+                has_key = False
+    assert room == 5, "Rotate Dungeon canonical SwanSong route must finish all rooms"
+
+
+def test_turncoat_canonical_plan():
+    success_path = ROOT / "games/turncoat-tactics/tests/play/success.json"
+    deterministic_path = ROOT / "games/turncoat-tactics/tests/play/deterministic.json"
+    assert success_path.read_bytes() == deterministic_path.read_bytes()
+    plan = json.loads(success_path.read_text())
+    token_to_action = {
+        "x3": "U", "x2": "R", "x1": "D", "x4": "L",
+        "a": "A", "b": "B",
+    }
+    route = "".join(token_to_action[event["inputs"][0]]
+                    for event in plan["events"] if event["inputs"])
+    assert route == "UARARAUAALLDDDADAUUARABADA"
+
 
 def test_bug_witch_puzzles():
     inputs = [0, 0, 1, 1, 0]
@@ -203,6 +252,7 @@ def main():
     test_radio_ghost_timing()
     test_courier_route()
     test_rotate_rooms()
+    test_turncoat_canonical_plan()
     test_bug_witch_puzzles()
     print("OK   cartridge IDs, graphical front ends, timing, routes, rooms, and puzzles")
 

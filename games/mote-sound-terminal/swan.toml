@@ -1,8 +1,8 @@
 schema_version = 1
 
 [sdk]
-version = "0.3.1"
-revision = "sha256:92c2f3b0823465c0d0b0d4e094ef3b2c89fcbf2e984a364cb1021e95e6043874"
+version = "0.4.0"
+revision = "sha256:4a08d6fa29bf49947576292574d0d868003add6537e01aa0438c4b6eedb85ffe"
 
 [game]
 id = "mote-sound-terminal"
@@ -84,6 +84,9 @@ type = "music"
 source = "assets/audio/track-2.toml"
 group = "terminal"
 
+[play]
+ready_frames = 120
+
 [[play.scenarios]]
 id = "neutral"
 title = "Neutral boot"
@@ -102,10 +105,10 @@ audio = true
 
 [[play.scenarios]]
 id = "success"
-title = "Terminal utility outcome"
-goal = "Exercise the terminal controls while playback remains audible."
+title = "Four-channel terminal mix"
+goal = "Exercise the terminal controls while all four sequencer voices remain audible and drive the scope."
 plan = "tests/play/success.json"
-required_checks = ["track changes", "tempo changes", "scope changes", "pause and resume both work"]
+required_checks = ["track changes", "tempo changes", "scope follows channel activity", "four-channel mix is audible", "pause and resume both work"]
 audio = true
 
 [[play.scenarios]]
@@ -119,10 +122,10 @@ audio = true
 [[play.scenarios]]
 id = "reset"
 title = "Terminal reset"
-goal = "Change terminal state and restore its defaults at an exact silent reset boundary."
+goal = "Change terminal state, restore its defaults, and restart the four-channel sequencer from row zero."
 plan = "tests/play/reset.json"
-required_checks = ["track and tempo first change", "reset restores defaults", "reset boundary is silent and playback-ready"]
-audio_expectation = "silent"
+required_checks = ["track and tempo first change", "reset restores defaults", "sequencer restarts from row zero", "scope returns to the default channel bank"]
+audio_expectation = "audible"
 
 [[play.scenarios]]
 id = "deterministic"

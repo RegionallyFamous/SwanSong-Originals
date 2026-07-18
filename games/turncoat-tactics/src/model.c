@@ -115,15 +115,28 @@ void turncoat_step(turncoat_state_t *state, const turncoat_input_t *input,
 	if (input->select_or_act) {
 		int8_t ai = ally_at(state, (int8_t)state->cursor_x, (int8_t)state->cursor_y);
 		int8_t ei = enemy_at(state, (int8_t)state->cursor_x, (int8_t)state->cursor_y);
-		if (ai >= 0) state->selected = (uint8_t)ai;
+		if (ai >= 0) {
+			state->selected = (uint8_t)ai;
+			event->tone_hz = 440;
+			event->tone_frames = 3;
+		}
 		else if (distance(&state->allies[state->selected],
 			(int8_t)state->cursor_x, (int8_t)state->cursor_y) == 1) {
-			if (ei >= 0) --state->enemies[(uint8_t)ei].hp;
+			if (ei >= 0) {
+				--state->enemies[(uint8_t)ei].hp;
+				event->tone_hz = 220;
+				event->tone_frames = 5;
+			}
 			else {
 				state->allies[state->selected].x = (int8_t)state->cursor_x;
 				state->allies[state->selected].y = (int8_t)state->cursor_y;
+				event->tone_hz = 340;
+				event->tone_frames = 3;
 			}
 			acted = true;
+		} else {
+			event->tone_hz = 100;
+			event->tone_frames = 3;
 		}
 		event->dirty = true;
 	}
@@ -141,17 +154,32 @@ void turncoat_step(turncoat_state_t *state, const turncoat_input_t *input,
 			event->tone_hz = 580;
 			event->tone_frames = 10;
 			event->dirty = true;
+		} else {
+			event->tone_hz = 120;
+			event->tone_frames = 3;
+			event->dirty = true;
 		}
 	}
-	if (input->end_turn) acted = true;
+	if (input->end_turn) {
+		acted = true;
+		event->tone_hz = 280;
+		event->tone_frames = 3;
+	}
 	if (acted) {
 		if (state->turns) --state->turns;
 		enemy_turn(state);
 		if (!state->allies[state->selected].hp) state->selected = first_living_ally(state);
 		event->dirty = true;
 	}
-	if (turncoat_beacon_secured(state) || turncoat_enemy_count(state) == 0)
+	if (turncoat_beacon_secured(state) || turncoat_enemy_count(state) == 0) {
 		state->result = TURNCOAT_RESULT_WIN;
-	else if (state->allies[0].hp == 0 || state->turns == 0)
+		event->tone_hz = 760;
+		event->tone_frames = 12;
+		event->dirty = true;
+	} else if (state->allies[0].hp == 0 || state->turns == 0) {
 		state->result = TURNCOAT_RESULT_LOSS;
+		event->tone_hz = 80;
+		event->tone_frames = 12;
+		event->dirty = true;
+	}
 }

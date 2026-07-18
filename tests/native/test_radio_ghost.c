@@ -12,8 +12,34 @@ int main(void) {
 	radio_reset(&state);
 	initial = state;
 	assert(state.frequency == 880 && state.time == RADIO_NIGHT_FRAMES && state.gain == 5);
-	state.frequency = radio_target_for(0);
+
+	/* Narrow gate rejects a signal six units away. */
+	state.frequency = (uint16_t)(radio_target_for(0) - 6u);
 	input.lock = true;
+	radio_step(&state, &input, &event);
+	assert(state.clue == 0 && state.time == RADIO_NIGHT_FRAMES - 301u);
+	assert(event.tone_hz == 110 && event.tone_frames == 8);
+
+	/* Wide gate accepts it, but each successful wide lock costs one gain pip. */
+	radio_reset(&state);
+	state.gate = true;
+	state.frequency = (uint16_t)(radio_target_for(0) - 6u);
+	radio_step(&state, &input, &event);
+	assert(state.clue == 1 && state.gain == 4 && event.tone_hz == 520);
+	state.frequency = (uint16_t)(radio_target_for(1) - 6u);
+	radio_step(&state, &input, &event);
+	assert(state.clue == 1 && state.gain == 4);
+	state.gain = 5;
+	radio_step(&state, &input, &event);
+	assert(state.clue == 2 && state.gain == 4 && event.tone_hz == 600);
+	state.gain = 5;
+	state.frequency = (uint16_t)(radio_target_for(2) - 6u);
+	radio_step(&state, &input, &event);
+	assert(state.result == RADIO_RESULT_SIGNAL && state.clue == 3);
+
+	/* Exact narrow-gate locks remain the lower-cost path. */
+	radio_reset(&state);
+	state.frequency = radio_target_for(0);
 	radio_step(&state, &input, &event);
 	assert(state.clue == 1 && event.tone_hz == 520);
 	state.frequency = 994;
@@ -34,6 +60,7 @@ int main(void) {
 	assert(state.result == RADIO_RESULT_DAWN);
 
 	radio_reset(&state);
+	memset(&input, 0, sizeof(input));
 	input.frequency_direction = 1;
 	input.gain_direction = -1;
 	input.toggle_gate = true;

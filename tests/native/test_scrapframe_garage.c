@@ -31,7 +31,7 @@ int main(void) {
 	confirm(&state, &event);
 	assert(state.last_ok && state.score == 3);
 	confirm(&state, &event);
-	assert(state.phase == 2);
+	assert(state.phase == 2 && event.tone_hz == 880 && event.tone_frames == 18);
 	confirm(&state, &event);
 	assert(event.reset_session && memcmp(&state, &initial, sizeof(state)) == 0);
 
@@ -39,6 +39,14 @@ int main(void) {
 	input.selection_direction = 1;
 	input.confirm = true;
 	scrapframe_step(&state, &input, &event);
-	assert(!state.last_ok && event.tone_hz == 130);
+	assert(!state.last_ok && state.phase == 1 && state.job == 0 &&
+		event.tone_hz == 130);
+	input.selection_direction = 0;
+	confirm(&state, &event);
+	assert(state.phase == 0 && state.job == 0 && state.selected == 0 &&
+		state.score == 0);
+	confirm(&state, &event);
+	assert(state.last_ok && state.phase == 1 && state.job == 0 &&
+		state.score == 1);
 	return 0;
 }

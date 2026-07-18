@@ -32,9 +32,15 @@ int main(void) {
 	bug_step(&state, &input, &event);
 	assert(state.cursor == 1 && state.selected == 2);
 	memset(&input, 0, sizeof(input));
+	input.selection_direction = -1;
+	bug_step(&state, &input, &event);
+	assert(state.selected == 1);
+	bug_step(&state, &input, &event);
+	assert(state.selected == 3);
+	memset(&input, 0, sizeof(input));
 	input.place = true;
 	bug_step(&state, &input, &event);
-	assert(state.cells[1] == 2 && event.tone_hz == 110 && event.tone_frames == 3);
+	assert(state.cells[1] == 3 && event.tone_hz == 110 && event.tone_frames == 3);
 
 	bug_reset(&state);
 	memset(&input, 0, sizeof(input));

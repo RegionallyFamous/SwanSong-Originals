@@ -1,8 +1,8 @@
 schema_version = 1
 
 [sdk]
-version = "0.3.1"
-revision = "sha256:92c2f3b0823465c0d0b0d4e094ef3b2c89fcbf2e984a364cb1021e95e6043874"
+version = "0.4.0"
+revision = "sha256:4a08d6fa29bf49947576292574d0d868003add6537e01aa0438c4b6eedb85ffe"
 
 [game]
 id = "radio-ghost"
@@ -50,6 +50,9 @@ id = "tuning"
 [[scenes]]
 id = "result"
 
+[play]
+ready_frames = 120
+
 [[play.scenarios]]
 id = "neutral"
 title = "Neutral boot"
@@ -62,15 +65,15 @@ id = "interaction"
 title = "Receiver controls"
 goal = "Tune frequency, adjust gain, switch the gate, and attempt a lock."
 plan = "tests/play/interaction.json"
-required_checks = ["frequency changes", "gain changes", "gate changes", "tuning produces audible feedback"]
+required_checks = ["frequency changes", "gain changes", "gate changes", "wide gate trades a larger lock window for gain", "tuning produces audible feedback"]
 audio = true
 
 [[play.scenarios]]
 id = "success"
-title = "First signal acquisition"
-goal = "Tune exactly to the first signal and expose it."
+title = "Complete signal acquisition"
+goal = "Use the wide gate and gain controls to lock all three hidden signals."
 plan = "tests/play/success.json"
-required_checks = ["frequency reaches the first target", "signal marker appears", "tuning feedback is audible"]
+required_checks = ["all three targets lock", "wide locks spend gain", "signal result appears", "lock tones use the model frequencies"]
 audio = true
 
 [[play.scenarios]]
@@ -87,12 +90,12 @@ title = "Receiver replay"
 goal = "Reach dawn and replay from a fresh night."
 plan = "tests/play/reset.json"
 required_checks = ["dawn result is reached", "replay restores the starting frequency", "night clock resets"]
-audio = true
+audio_expectation = "silent"
 
 [[play.scenarios]]
 id = "deterministic"
-title = "Deterministic signal replay"
-goal = "Replay the first signal acquisition from a fresh boot."
+title = "Deterministic receiver replay"
+goal = "Replay the complete three-signal acquisition from a fresh boot."
 plan = "tests/play/deterministic.json"
-required_checks = ["frequency and signal state match the utility path", "frame and WAV evidence match on repeated execution"]
+required_checks = ["three-lock result matches the success path", "frame and WAV evidence match on repeated execution"]
 audio = true

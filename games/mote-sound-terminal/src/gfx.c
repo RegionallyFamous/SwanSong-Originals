@@ -95,11 +95,13 @@ static void put_track_state(uint8_t track) {
 	}
 }
 
-static void put_bar_column(uint8_t x, uint8_t scope, uint8_t step) {
+static void put_bar_column(uint8_t x, uint8_t scope, uint8_t step,
+	const swan_audio_voice_t *voices) {
 	uint8_t lane;
 	for (lane = 0; lane < 3; ++lane) {
-		uint8_t level = (uint8_t)(step + x * (lane + 1) +
-			lane * 3 + scope * 2);
+		const swan_audio_voice_t *voice = &voices[(uint8_t)(lane + scope)];
+		uint8_t level = voice->owner == SWAN_VOICE_SILENT ? 0 :
+			(uint8_t)(voice->volume + voice->note + step + x * (lane + 1));
 		put_region((uint8_t)(2 + x), (uint8_t)(3 + lane * 3),
 			(uint8_t)(ASSET_BAR_X + (level & 7)), ASSET_ROW_METERS, 1, 3);
 	}
@@ -128,7 +130,7 @@ static void put_tempo(uint8_t tempo) {
 }
 
 void gfx_render(uint8_t track, bool playing, uint8_t tempo,
-	uint8_t scope, uint8_t step) {
+	uint8_t scope, uint8_t step, const swan_audio_voice_t *voices) {
 	uint8_t x;
 
 	if (!render_initialized) {
@@ -140,7 +142,7 @@ void gfx_render(uint8_t track, bool playing, uint8_t tempo,
 			ASSET_ROW_ICONS, 2, 2);
 		put_region(24, 0, scope ? ASSET_SCOPE_B_X : ASSET_SCOPE_A_X,
 			ASSET_ROW_ICONS, 2, 2);
-		for (x = 0; x < 24; ++x) put_bar_column(x, scope, step);
+		for (x = 0; x < 24; ++x) put_bar_column(x, scope, step, voices);
 		put_all_beats(track, step);
 		put_tempo(tempo);
 		render_initialized = true;
@@ -150,17 +152,23 @@ void gfx_render(uint8_t track, bool playing, uint8_t tempo,
 			put_track_state(track);
 			put_all_beats(track, step);
 		}
-		if (playing != rendered_playing)
+		if (playing != rendered_playing) {
 			put_region(20, 0, playing ? ASSET_PAUSE_X : ASSET_PLAY_X,
 				ASSET_ROW_ICONS, 2, 2);
-		if (scope != rendered_scope)
+			for (x = 0; x < 24; ++x)
+				put_bar_column(x, scope, step, voices);
+		}
+		if (scope != rendered_scope) {
 			put_region(24, 0, scope ? ASSET_SCOPE_B_X : ASSET_SCOPE_A_X,
 				ASSET_ROW_ICONS, 2, 2);
+			for (x = 0; x < 24; ++x)
+				put_bar_column(x, scope, step, voices);
+		}
 		if (tempo != rendered_tempo) put_tempo(tempo);
 		if (step != rendered_step) {
 			/* A two-column scope sweep keeps animation below the input-frame budget. */
 			for (x = step; x < 24; x = (uint8_t)(x + 16))
-				put_bar_column(x, scope, step);
+				put_bar_column(x, scope, step, voices);
 			if (!track_changed) {
 				put_beat(rendered_step, track, step);
 				put_beat(step, track, step);
