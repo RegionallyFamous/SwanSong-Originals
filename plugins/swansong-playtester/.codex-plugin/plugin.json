@@ -1,6 +1,6 @@
 {
   "name": "swansong-playtester",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Play SwanSong ROMs, validate WonderSwan-native interaction patterns, and run guarded Translation Lab evidence workflows through SwanSong's deterministic MCP tools.",
   "author": {
     "name": "Regionally Famous",

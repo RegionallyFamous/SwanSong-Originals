@@ -1,8 +1,8 @@
 schema_version = 1
 
 [sdk]
-version = "0.3.1"
-revision = "sha256:92c2f3b0823465c0d0b0d4e094ef3b2c89fcbf2e984a364cb1021e95e6043874"
+version = "0.4.0"
+revision = "sha256:4a08d6fa29bf49947576292574d0d868003add6537e01aa0438c4b6eedb85ffe"
 
 [game]
 id = "scrapframe-garage"
@@ -47,6 +47,9 @@ id = "repair"
 [[scenes]]
 id = "result"
 
+[play]
+ready_frames = 120
+
 [[play.scenarios]]
 id = "neutral"
 title = "Neutral boot"
@@ -73,9 +76,9 @@ audio = true
 [[play.scenarios]]
 id = "failure"
 title = "Wrong-part diagnostic"
-goal = "Install an incorrect part and inspect the failure feedback."
+goal = "Install an incorrect part, inspect the rejection, and keep the same job available for retry."
 plan = "tests/play/failure.json"
-required_checks = ["wrong part is rejected", "failure feedback is visible", "job can still advance"]
+required_checks = ["wrong part is rejected", "failure feedback is visible", "confirm returns to the same job for retry"]
 audio = true
 
 [[play.scenarios]]
@@ -84,7 +87,7 @@ title = "Repair shift replay"
 goal = "Complete a shift and replay from the first job."
 plan = "tests/play/reset.json"
 required_checks = ["results screen is reached", "replay restores job one", "score and selection return to defaults"]
-audio = true
+audio_expectation = "silent"
 
 [[play.scenarios]]
 id = "deterministic"

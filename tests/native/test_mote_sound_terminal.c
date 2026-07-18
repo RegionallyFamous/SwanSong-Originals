@@ -24,6 +24,12 @@ int main(void) {
 	mote_step(&state, &input, &event);
 	assert(state.track == 1 && state.tempo == 13 && state.scope == 1);
 	assert(event.dirty && state.tick == 1 && state.step == 0);
+	state.step = 7;
+	state.tick = 4;
+	memset(&input, 0, sizeof(input));
+	input.tempo_direction = 1;
+	mote_step(&state, &input, &event);
+	assert(state.tempo == 14 && state.step == 0 && state.tick == 1);
 
 	mote_reset(&state);
 	memset(&input, 0, sizeof(input));

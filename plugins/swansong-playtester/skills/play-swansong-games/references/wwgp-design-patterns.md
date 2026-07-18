@@ -17,6 +17,7 @@ WonderSwan homebrew; it is not a source-code or asset library.
 | Suspend and persistence | Suspend commit, power-cycle resume, one-shot consumption, profile/high-score retention, corruption fallback, and clean reset | Separate checkpoint, suspend, profile, and settings records |
 | Utility editor | Wraparound cursor, text entry, long-press alternatives, delete, dirty state, save/open, and utility outcome | `utility-app` recipe and fixed-capacity editor widgets |
 | Capacity pressure | Per-scene ROM/RAM/VRAM, sprite scanline pressure, audio work area, and feature-level deltas | Build-time budgets and Studio previews |
+| Frame cadence | Exact input transition delivery, game update/session ticks, missed VBlanks, dirty-region cost, and unchanged replay | Input bridge fixture plus profiler traces that distinguish host frames from sampled game frames |
 
 ## Scenario packs
 
@@ -39,6 +40,12 @@ After each title, record friction and choose exactly one durable home for every
 recurring problem: runtime API, asset rule, recipe, documentation, or regression
 test. Keep game-specific rules, art direction, names, story, and authored content
 in the game.
+
+Treat milestones and endings separately. A route planner or model test can prove
+that completion is reachable, but the play verdict still requires the shipping
+ROM to display the final result through SwanSong. If a transition is missed,
+measure both the scheduled host frame and the sampled game tick before changing
+button durations or assigning blame to the emulator bridge.
 
 ## Clean-room boundary
 

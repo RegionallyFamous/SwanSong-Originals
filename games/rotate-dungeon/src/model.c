@@ -70,8 +70,13 @@ void rotate_step(rotate_state_t *state, const rotate_input_t *input,
 	if (state->x == rotate_key_x(state->room) &&
 		state->y == rotate_key_y(state->room)) state->key = true;
 	if (state->key && state->x == 10 && state->y == 1) {
-		if (++state->room >= 5) state->result = ROTATE_RESULT_COMPLETE;
-		else {
+		if (++state->room >= 5) {
+			state->result = ROTATE_RESULT_COMPLETE;
+			event->tone_hz = 760;
+			event->tone_frames = 12;
+		} else {
+			event->tone_hz = 640;
+			event->tone_frames = 8;
 			state->x = 1;
 			state->y = 1;
 			state->key = false;

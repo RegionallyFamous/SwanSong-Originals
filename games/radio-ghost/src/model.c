@@ -57,10 +57,14 @@ void radio_step(radio_state_t *state, const radio_input_t *input,
 		uint16_t target = radio_target_for(state->clue);
 		uint16_t distance = state->frequency > target ?
 			state->frequency - target : target - state->frequency;
-		if (distance <= 3 && state->gain >= 3) {
+		uint8_t tolerance = state->gate ? 8u : 3u;
+		uint8_t minimum_gain = state->gate ? 5u : 3u;
+		if (distance <= tolerance && state->gain >= minimum_gain) {
 			++state->clue;
 			event->tone_hz = (uint16_t)(440 + state->clue * 80);
 			event->tone_frames = 12;
+			/* The wider filter spends one gain pip after a successful lock. */
+			if (state->gate) --state->gain;
 			if (state->clue == 3) state->result = RADIO_RESULT_SIGNAL;
 		} else {
 			state->time = state->time > 300 ? (uint16_t)(state->time - 300) : 0;

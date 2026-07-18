@@ -31,7 +31,15 @@ void scrapframe_step(scrapframe_state_t *state,
 			event->dirty = true;
 		}
 	} else if (state->phase == 1 && input->confirm) {
-		if (++state->job >= 3) state->phase = 2;
+		if (!state->last_ok) {
+			/* A rejected part returns to the same bench for a readable retry. */
+			state->phase = 0;
+			state->selected = 0;
+		} else if (++state->job >= 3) {
+			state->phase = 2;
+			event->tone_hz = 880;
+			event->tone_frames = 18;
+		}
 		else {
 			state->phase = 0;
 			state->selected = 0;

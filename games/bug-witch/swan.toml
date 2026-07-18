@@ -1,8 +1,8 @@
 schema_version = 1
 
 [sdk]
-version = "0.3.1"
-revision = "sha256:92c2f3b0823465c0d0b0d4e094ef3b2c89fcbf2e984a364cb1021e95e6043874"
+version = "0.4.0"
+revision = "sha256:4a08d6fa29bf49947576292574d0d868003add6537e01aa0438c4b6eedb85ffe"
 
 [game]
 id = "bug-witch"
@@ -51,6 +51,9 @@ id = "circuit"
 [[scenes]]
 id = "result"
 
+[play]
+ready_frames = 120
+
 [[play.scenarios]]
 id = "neutral"
 title = "Neutral boot"
@@ -68,10 +71,10 @@ audio = true
 
 [[play.scenarios]]
 id = "success"
-title = "Solved circuit"
-goal = "Build and run a valid solution for the first puzzle."
+title = "Solved spellbook"
+goal = "Build and run valid solutions for all five circuits."
 plan = "tests/play/success.json"
-required_checks = ["familiar is placed", "run is accepted", "puzzle advances"]
+required_checks = ["all required familiar mixes are placed", "all five runs are accepted", "completion result appears"]
 audio = true
 
 [[play.scenarios]]
@@ -88,12 +91,12 @@ title = "Full spellbook replay"
 goal = "Solve all five puzzles and replay from the first circuit."
 plan = "tests/play/reset.json"
 required_checks = ["completion result appears", "replay returns to puzzle one", "cells and familiar selection reset"]
-audio = true
+audio_expectation = "silent"
 
 [[play.scenarios]]
 id = "deterministic"
-title = "Deterministic circuit replay"
-goal = "Replay the first solved circuit from a fresh boot."
+title = "Deterministic spellbook replay"
+goal = "Replay the complete five-circuit solution from a fresh boot."
 plan = "tests/play/deterministic.json"
-required_checks = ["puzzle state matches the success path", "frame and WAV evidence match on repeated execution"]
+required_checks = ["completion state matches the success path", "frame and WAV evidence match on repeated execution"]
 audio = true

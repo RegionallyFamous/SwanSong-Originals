@@ -72,7 +72,7 @@ patterns = (
     / "references"
     / "wwgp-design-patterns.md"
 ).read_text()
-assert manifest["version"] == "0.3.0"
+assert manifest["version"] == "0.3.1"
 assert "references/wwgp-design-patterns.md" in skill
 for required in (
     "Dual-cluster gestures",

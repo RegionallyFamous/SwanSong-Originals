@@ -24,9 +24,14 @@ void mote_step(mote_state_t *state, const mote_input_t *input,
 		event->dirty = true;
 	}
 	if (input->tempo_direction) {
-		state->tempo = clamp_u8((int16_t)state->tempo +
+		uint8_t tempo = clamp_u8((int16_t)state->tempo +
 			(input->tempo_direction > 0 ? 1 : -1), 5, 20);
-		event->dirty = true;
+		if (tempo != state->tempo) {
+			state->tempo = tempo;
+			state->step = 0;
+			state->tick = 0;
+			event->dirty = true;
+		}
 	}
 	if (input->toggle_play) {
 		state->playing = !state->playing;

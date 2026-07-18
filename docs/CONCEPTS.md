@@ -5,8 +5,9 @@ sessions rather than unfinished slices of larger campaigns.
 
 ## 1. Mote Sound Terminal
 
-- **Loop:** play three original generative synth sequences, pause playback,
-  change tempo and track, switch between two meters, or reset the terminal.
+- **Loop:** play three original four-channel synth sequences, pause/resume
+  without losing phase, change tempo and track, switch the live-voice scope,
+  or restart the terminal at row zero.
 - **Controls:** left/right changes track; up/down changes tempo; A toggles
   playback; B changes scope; Start resets all terminal state.
 
@@ -18,15 +19,16 @@ sessions rather than unfinished slices of larger campaigns.
 
 ## 3. Scrapframe Garage
 
-- **Loop:** match one of three parts to each customer's symptom, see the test
-  outcome, and complete a three-job shift with a zero-to-three score.
+- **Loop:** match one of three parts to each customer's symptom, retry a
+  rejected repair on the same job, and complete a three-job shift with a
+  zero-to-three score.
 - **Controls:** left/right selects a part; A installs or advances.
 
 ## 4. Radio Ghost
 
-- **Loop:** tune three signals and maintain enough gain before the corrected
-  seventy-five-frame clock reaches dawn. Bad locks cost time; success and dawn
-  each produce a replayable ending.
+- **Loop:** tune three signals and maintain enough gain before the roughly
+  one-minute night reaches dawn. A wide gate accepts a broader frequency band
+  but costs gain after a lock; bad locks cost time. Both endings replay cleanly.
 - **Controls:** left/right tunes; up/down adjusts gain; A locks; B changes the
   noise gate.
 
@@ -34,13 +36,14 @@ sessions rather than unfinished slices of larger campaigns.
 
 - **Loop:** charge and release a ranged tag, lure moving targets, mark three
   small creatures, then land three hits on the leviathan before oxygen ends.
-- **Controls:** directions move; hold/release A fires; hold B lures.
+- **Controls:** left/right moves; hold/release A fires; hold B lures.
 
 ## 6. Turncoat Tactics
 
 - **Loop:** command three allied robots on an 8-by-6 grid, attack or recruit
-  four enemies, and secure the eastern beacon within eighteen turns. Recruited
-  units join the selectable squad; adjacent enemies can attack any ally.
+  four enemies, and secure the eastern beacon or eliminate the remaining force
+  within eighteen turns. Recruited units join the selectable squad and can act;
+  adjacent enemies can attack any ally.
 - **Controls:** directions move the cursor; A selects or acts; B recruits an
   adjacent one-HP enemy; Start ends the turn.
 
@@ -49,12 +52,13 @@ sessions rather than unfinished slices of larger campaigns.
 - **Loop:** frame and photograph sleep, feeding, and migration behavior while
   managing disturbance and sunset. Complete evidence wins; a stressed subject
   or expired day ends the expedition.
-- **Controls:** directions move the camera; A photographs; B hides; Start zooms.
+- **Controls:** left/right moves the camera; A photographs; B hides; Start zooms.
 
 ## 8. Rotate Dungeon
 
-- **Loop:** switch each room between horizontal and vertical wall logic, collect
-  its key, and reach the exit through five host-verified solvable layouts.
+- **Loop:** switch each room between two logical wall orientations, collect its
+  key, and reach the exit through five host-verified solvable layouts while the
+  landscape display remains stable.
 - **Controls:** directions move; Start rotates; B fully resets the room.
 
 ## 9. One Last Lap
@@ -62,13 +66,13 @@ sessions rather than unfinished slices of larger campaigns.
 - **Loop:** accelerate, brake, and change lanes through three laps while battery
   drains on movement. Tow the stranded rival for the cooperative ending or
   finish alone; empty battery ends the run.
-- **Controls:** directions change lane; A accelerates; B brakes; Start tows near
-  the stranded rival.
+- **Controls:** left/right changes lane; A accelerates; B brakes; hold Start tows
+  in the lap-two rescue zone.
 
 ## 10. Bug Witch
 
 - **Loop:** place flip, set-one, and clear familiars into five circuits. Each
   puzzle validates output, component mix, and placement limit; rejected signals
   remain editable and the completed set restarts cleanly.
-- **Controls:** left/right moves; up/down changes familiar; A places; B clears;
-  Start runs the circuit.
+- **Controls:** left/right moves; up selects the previous familiar and down the
+  next; A places; B clears; Start runs the circuit.

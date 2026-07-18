@@ -3,6 +3,7 @@
 #include "swan_game_runtime.h"
 #include "gfx.h"
 #include "gameplay_art.h"
+#include "model.h"
 
 static const uint16_t __far *behavior_for(uint8_t behavior) {
 	if (behavior == 0) return art_behavior_0;
@@ -31,10 +32,6 @@ void gfx_render(uint8_t camera, uint8_t kaiju, uint8_t behavior,
 	uint8_t i;
 	uint8_t camera_x = (uint8_t)(1 + camera);
 	uint8_t creature_x = (uint8_t)(1 + kaiju);
-	uint8_t low = zoom ? 6 : 3;
-	uint8_t high = zoom ? 10 : 7;
-	uint8_t safe_left = kaiju > high ? (uint8_t)(1 + kaiju - high) : 1;
-	uint8_t safe_right = kaiju > low ? (uint8_t)(1 + kaiju - low) : 1;
 
 	rf_gfx_fill(art_sky[0], 0, 0, 28, 14);
 	rf_gfx_fill(art_ground[0], 0, 14, 28, 4);
@@ -56,8 +53,9 @@ void gfx_render(uint8_t camera, uint8_t kaiju, uint8_t behavior,
 			sun > (uint16_t)(i * 180) ? art_pip_full[0] : art_pip_empty[0]);
 	}
 	rf_gfx_put_image(creature_x, 5, creature_for(behavior), 6, 8);
-	for (i = safe_left; i <= safe_right && i < 28; ++i) {
-		rf_gfx_put_tile(i, 13, art_pip_full[0]);
+	for (i = 0; i <= 20; ++i) {
+		if (kaiju_camera_in_range(i, kaiju, zoom))
+			rf_gfx_put_tile((uint8_t)(1 + i), 13, art_pip_full[0]);
 	}
 	rf_gfx_put_image(camera_x, 13, art_camera, 3, 3);
 	if (result) {

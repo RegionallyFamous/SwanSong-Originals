@@ -45,9 +45,9 @@ void gfx_render(uint8_t lap, uint8_t progress, uint8_t speed,
 		rf_gfx_put_tile((uint8_t)(1 + x * 2), 0,
 			x < lap ? art_pip_full[0] : art_pip_empty[0]);
 	}
-	for (x = 0; x < 7; ++x) {
-		rf_gfx_put_tile((uint8_t)(8 + x), 0,
-			battery > (uint8_t)(x * 10) ? art_pip_full[0] : art_pip_empty[0]);
+	for (x = 0; x < 10; ++x) {
+		rf_gfx_put_tile((uint8_t)(6 + x), 0,
+			battery > (uint8_t)(x * 12) ? art_pip_full[0] : art_pip_empty[0]);
 	}
 	for (x = 0; x < 6; ++x) {
 		rf_gfx_put_tile((uint8_t)(17 + x), 0,

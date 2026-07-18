@@ -40,5 +40,6 @@ typedef struct {
 void kaiju_reset(kaiju_state_t *state);
 void kaiju_step(kaiju_state_t *state, const kaiju_input_t *input,
 	uint32_t session_tick, kaiju_event_t *event);
+bool kaiju_camera_in_range(uint8_t camera, uint8_t kaiju, bool zoom);
 
 #endif

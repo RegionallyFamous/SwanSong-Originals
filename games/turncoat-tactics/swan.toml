@@ -1,8 +1,8 @@
 schema_version = 1
 
 [sdk]
-version = "0.3.1"
-revision = "sha256:92c2f3b0823465c0d0b0d4e094ef3b2c89fcbf2e984a364cb1021e95e6043874"
+version = "0.4.0"
+revision = "sha256:4a08d6fa29bf49947576292574d0d868003add6537e01aa0438c4b6eedb85ffe"
 
 [game]
 id = "turncoat-tactics"
@@ -51,6 +51,9 @@ id = "battle"
 [[scenes]]
 id = "result"
 
+[play]
+ready_frames = 120
+
 [[play.scenarios]]
 id = "neutral"
 title = "Neutral boot"
@@ -63,31 +66,35 @@ id = "interaction"
 title = "Tactics controls"
 goal = "Move the cursor, select or act, attempt recruitment, and end a turn."
 plan = "tests/play/interaction.json"
-required_checks = ["cursor moves", "selection changes", "actions produce feedback", "turn advances"]
+required_checks = ["cursor moves", "selected unit range is marked", "selection, movement, and failed recruitment produce distinct feedback", "turn advances"]
+audio = true
 [[play.scenarios]]
 id = "success"
-title = "Successful unit action"
-goal = "Select an ally and move it to an adjacent open tile."
+title = "Recruitment victory"
+goal = "Recruit a weakened enemy, use the new ally, and eliminate the final enemy force."
 plan = "tests/play/success.json"
-required_checks = ["ally selection is visible", "unit moves to the cursor", "turn count advances"]
+required_checks = ["selected unit range is visible", "an enemy joins the recruit track", "the recruited ally takes an action", "enemy count reaches zero", "win result appears"]
+audio = true
 
 [[play.scenarios]]
 id = "failure"
-title = "Turn-limit defeat"
-goal = "End turns until the tactical turn limit is exhausted."
+title = "Commander defeat"
+goal = "End turns without acting until the enemy force overwhelms the commander."
 plan = "tests/play/failure.json"
-required_checks = ["turn count reaches zero", "loss result appears", "result remains stable"]
+required_checks = ["enemy advance is visible", "commander health reaches zero", "loss result appears", "result remains stable"]
+audio = true
 
 [[play.scenarios]]
 id = "reset"
 title = "Battle replay"
-goal = "Reach turn-limit defeat and replay the battle."
+goal = "Reach commander defeat and replay the battle."
 plan = "tests/play/reset.json"
 required_checks = ["loss result is reached", "replay restores initial unit positions", "turn count resets"]
 
 [[play.scenarios]]
 id = "deterministic"
 title = "Deterministic tactics replay"
-goal = "Replay the successful unit action from a fresh boot."
+goal = "Replay the complete recruitment victory from a fresh boot."
 plan = "tests/play/deterministic.json"
-required_checks = ["unit and turn state match the success path", "frame evidence matches on repeated execution"]
+required_checks = ["recruitment and win state match the success path", "frame and WAV evidence match on repeated execution"]
+audio = true

@@ -4,7 +4,7 @@
     "rom": "mote_sound_terminal.wsc",
     "goal": "Change track and tempo, switch the scope, pause and resume playback, then reset.",
     "controls": {"left": "previous track", "right": "next track", "up": "faster", "down": "slower", "a": "play or pause", "b": "change scope", "start": "reset"},
-    "required_checks": ["track state changes", "tempo state changes", "scope changes", "playback visibly pauses or resumes", "Start restores the initial state"]
+    "required_checks": ["track state changes", "tempo state changes", "four-channel mix is audible", "scope follows live voice activity", "playback visibly pauses and resumes", "Start restores row zero and the initial state"]
   },
   "orbital-courier": {
     "title": "Orbital Courier",
@@ -18,35 +18,35 @@
     "rom": "scrapframe_garage.wsc",
     "goal": "Repair three machines by selecting and installing the correct part for each job.",
     "controls": {"left": "previous part", "right": "next part", "a": "install or advance"},
-    "required_checks": ["part selection changes", "install produces feedback", "three jobs can finish", "score is visible", "completed shift can restart"]
+    "required_checks": ["part selection changes", "wrong parts return to the same job for retry", "install produces feedback", "three jobs can finish", "score is visible", "completed shift can restart"]
   },
   "radio-ghost": {
     "title": "Radio Ghost",
     "rom": "radio_ghost.wsc",
     "goal": "Tune and lock three hidden signals before dawn while maintaining enough gain.",
     "controls": {"left": "tune down", "right": "tune up", "up": "gain up", "down": "gain down", "a": "lock signal", "b": "toggle gate"},
-    "required_checks": ["frequency changes", "gain changes", "gate changes", "good locks advance clues", "success and dawn endings can restart"]
+    "required_checks": ["frequency changes", "gain changes", "wide gate expands tolerance but spends gain", "good locks advance all three clues", "model lock tones reach the cartridge audio", "success and dawn endings can restart"]
   },
   "harpoon-moon": {
     "title": "Harpoon Moon",
     "rom": "harpoon_moon.wsc",
     "goal": "Tag three small creatures and defeat the final leviathan before oxygen expires.",
-    "controls": {"left": "move left", "right": "move right", "up": "move up", "down": "move down", "a": "hold to charge and release to fire", "b": "hold to lure"},
-    "required_checks": ["movement works", "A charges while held", "releasing A fires", "B changes lure behavior", "victory and oxygen failure can restart"]
+    "controls": {"left": "move left", "right": "move right", "a": "hold to charge and release to fire", "b": "hold to lure"},
+    "required_checks": ["movement works", "A charges while held", "releasing A fires", "B changes lure behavior", "three creature tags reveal the boss", "three boss hits reach victory", "oxygen failure can restart"]
   },
   "turncoat-tactics": {
     "title": "Turncoat Tactics",
     "rom": "turncoat_tactics.wsc",
-    "goal": "Move, attack or recruit, and capture the eastern beacon within eighteen turns.",
+    "goal": "Weaken and recruit an enemy, use the new ally, and eliminate the remaining force before the commander falls.",
     "controls": {"left": "cursor left", "right": "cursor right", "up": "cursor up", "down": "cursor down", "a": "select or act", "b": "recruit adjacent weakened enemy", "start": "end turn"},
-    "required_checks": ["cursor reaches all board edges", "selection and movement work", "attacks reduce health", "recruitment changes team", "turn end advances enemies", "win and loss can restart"]
+    "required_checks": ["cursor reaches all board edges", "selection range is visible", "attacks reduce health", "recruitment changes team", "the recruited ally can act", "enemy count reaches zero", "win and loss can restart"]
   },
   "pocket-kaiju-observatory": {
     "title": "Pocket Kaiju Observatory",
     "rom": "pocket_kaiju_observatory.wsc",
     "goal": "Photograph all three behaviors at safe distances before disturbance or sunset ends the expedition.",
-    "controls": {"left": "camera left", "right": "camera right", "up": "camera up", "down": "camera down", "a": "photograph", "b": "hold to hide", "start": "toggle zoom"},
-    "required_checks": ["camera moves", "zoom changes framing", "good photos add evidence", "bad photos add disturbance", "hiding reduces disturbance", "result can restart"]
+    "controls": {"left": "camera left", "right": "camera right", "a": "photograph", "b": "hold to hide", "start": "toggle zoom"},
+    "required_checks": ["camera moves", "zoom exposes both valid distance bands", "all three timed behaviors add evidence", "bad photos add disturbance", "hiding reduces disturbance", "complete and failure results can restart"]
   },
   "rotate-dungeon": {
     "title": "Rotate Dungeon",
@@ -59,14 +59,14 @@
     "title": "One Last Lap",
     "rom": "one_last_lap.wsc",
     "goal": "Complete three laps while managing lanes, speed and battery; optionally tow the stranded rival.",
-    "controls": {"left": "lane left", "right": "lane right", "up": "lane up", "down": "lane down", "a": "hold to accelerate", "b": "hold to brake", "start": "tow when nearby"},
-    "required_checks": ["lane changes work", "A increases speed", "B reduces speed", "hazards and rivals affect play", "tow choice changes ending", "battery failure can restart"]
+    "controls": {"left": "lane left", "right": "lane right", "a": "hold to accelerate", "b": "hold to brake", "start": "hold to tow in the lap-two rescue zone"},
+    "required_checks": ["lane changes work", "A increases speed", "B reduces speed", "hazards and rivals affect play", "tow reaches the cooperative ending", "skipping tow reaches a distinct solo ending", "battery failure can restart"]
   },
   "bug-witch": {
     "title": "Bug Witch",
     "rom": "bug_witch.wsc",
     "goal": "Place logic familiars and solve five circuits with the required output, mix and budget.",
-    "controls": {"left": "previous socket", "right": "next socket", "up": "next familiar", "down": "previous familiar", "a": "place familiar", "b": "clear socket", "start": "run circuit"},
+    "controls": {"left": "previous socket", "right": "next socket", "up": "previous familiar", "down": "next familiar", "a": "place familiar", "b": "clear socket", "start": "run circuit"},
     "required_checks": ["cursor moves through five sockets", "familiar selection changes", "place and clear work", "invalid circuit remains editable", "valid circuit advances", "five puzzles can restart"]
   }
 }

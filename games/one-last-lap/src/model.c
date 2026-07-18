@@ -27,7 +27,7 @@ bool lap_rival_contact(uint8_t progress, uint8_t lane) {
 void lap_reset(lap_state_t *state) {
 	memset(state, 0, sizeof(*state));
 	state->lap = 1;
-	state->battery = 70;
+	state->battery = 120;
 	state->lane = 1;
 }
 
@@ -48,11 +48,15 @@ void lap_step(lap_state_t *state, const lap_input_t *input,
 		--state->speed;
 		event->dirty = true;
 	}
+	if (input->accelerate && input->brake && session_tick % 6 == 0 &&
+		state->battery) {
+		--state->battery;
+		event->dirty = true;
+	}
 	if (input->tow && !state->helped && state->lap == 2 &&
 		state->progress >= 40 && state->progress <= 56) {
 		state->helped = true;
 		state->speed = 0;
-		state->battery = state->battery > 10 ? (uint8_t)(state->battery - 10) : 0;
 		tone(event, 560, 12);
 		event->dirty = true;
 	}
@@ -73,7 +77,7 @@ void lap_step(lap_state_t *state, const lap_input_t *input,
 	if (state->result == LAP_RESULT_PLAYING && !state->rival_zone &&
 		lap_rival_contact(state->progress, state->lane)) {
 		state->speed = state->speed > 2 ? (uint8_t)(state->speed - 2) : 1;
-		state->battery = state->battery > 4 ? (uint8_t)(state->battery - 4) : 0;
+		state->battery = state->battery > 3 ? (uint8_t)(state->battery - 3) : 0;
 		state->rival_zone = true;
 		tone(event, 180, 6);
 		event->dirty = true;
@@ -85,7 +89,7 @@ void lap_step(lap_state_t *state, const lap_input_t *input,
 		((state->progress >= 24 && state->progress <= 30 && state->lane == 1) ||
 		 (state->progress >= 68 && state->progress <= 74 && state->lane == 2))) {
 		state->speed = 1;
-		state->battery = state->battery > 6 ? (uint8_t)(state->battery - 6) : 0;
+		state->battery = state->battery > 4 ? (uint8_t)(state->battery - 4) : 0;
 		state->crash_zone = true;
 		tone(event, 100, 8);
 		event->dirty = true;

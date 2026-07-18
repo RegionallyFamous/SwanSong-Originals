@@ -1,8 +1,8 @@
 schema_version = 1
 
 [sdk]
-version = "0.3.1"
-revision = "sha256:92c2f3b0823465c0d0b0d4e094ef3b2c89fcbf2e984a364cb1021e95e6043874"
+version = "0.4.0"
+revision = "sha256:4a08d6fa29bf49947576292574d0d868003add6537e01aa0438c4b6eedb85ffe"
 
 [game]
 id = "pocket-kaiju-observatory"
@@ -24,8 +24,6 @@ rtc = false
 [controls.actions]
 left = ["X4", "Y1"]
 right = ["X2", "Y3"]
-up = ["X3", "Y2"]
-down = ["X1", "Y4"]
 photograph = ["A"]
 hide = ["B"]
 toggle_zoom = ["START"]
@@ -51,6 +49,9 @@ id = "observation"
 [[scenes]]
 id = "result"
 
+[play]
+ready_frames = 120
+
 [[play.scenarios]]
 id = "neutral"
 title = "Neutral boot"
@@ -61,17 +62,17 @@ required_checks = ["subject and camera frame are visible", "disturbance is visib
 [[play.scenarios]]
 id = "interaction"
 title = "Observation controls"
-goal = "Move the camera, change zoom, hide, and take a photograph."
+goal = "Move the camera, change zoom, take a photograph, then hide until disturbance recovers."
 plan = "tests/play/interaction.json"
-required_checks = ["camera moves", "zoom changes framing", "hide changes state", "photograph produces feedback"]
+required_checks = ["camera moves", "zoom changes the two valid distance bands", "photograph raises disturbance", "hiding lowers disturbance"]
 audio = true
 
 [[play.scenarios]]
 id = "success"
-title = "Useful field evidence"
-goal = "Move into photographic range and capture valid behavior evidence."
+title = "Complete field survey"
+goal = "Photograph all three timed behaviors from valid range, hiding after photographs to recover."
 plan = "tests/play/success.json"
-required_checks = ["camera reaches valid range", "photograph is accepted", "evidence state advances"]
+required_checks = ["both valid distance bands are drawn", "hide lowers disturbance after a photograph", "all three timed behavior evidence slots fill", "complete survey result appears"]
 audio = true
 
 [[play.scenarios]]
@@ -88,12 +89,12 @@ title = "Observatory replay"
 goal = "Reach disturbance failure and replay the observation."
 plan = "tests/play/reset.json"
 required_checks = ["failure result is reached", "replay restores camera and subject", "disturbance and evidence reset"]
-audio = true
+audio_expectation = "silent"
 
 [[play.scenarios]]
 id = "deterministic"
-title = "Deterministic evidence replay"
-goal = "Replay the valid photograph path from a fresh boot."
+title = "Deterministic survey replay"
+goal = "Replay the complete timed-behavior survey from a fresh boot."
 plan = "tests/play/deterministic.json"
-required_checks = ["camera and evidence state match the success path", "frame and WAV evidence match on repeated execution"]
+required_checks = ["camera, disturbance, all evidence, and result match the success path", "frame and WAV evidence match on repeated execution"]
 audio = true
