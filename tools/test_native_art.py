@@ -5,6 +5,7 @@ from __future__ import annotations
 
 from pathlib import Path
 import hashlib
+import json
 import re
 import struct
 
@@ -55,20 +56,42 @@ def main() -> None:
         assert atlas.is_file()
         assert not (ROOT / "games" / slug / "src" / "native_art.h").exists()
 
-        header = header_path.read_text()
         main_source = main_path.read_text()
         gfx_source = gfx_path.read_text()
         source_sha = hashlib.sha256(master.read_bytes()).hexdigest()
-        assert f"Imagegen source SHA-256: {source_sha}" in header
 
         if slug == "orbital-courier":
-            intro_tiles_name = "orbital_intro_tiles"
-            intro_map_name = "orbital_intro_map"
-            game_tiles_name = "orbital_game_tiles"
-            palette_name = "orbital_palette"
+            game_root = ROOT / "games" / slug
+            intro_asset = game_root / "assets" / "graphics" / "intro.png"
+            gameplay_asset = game_root / "assets" / "graphics" / "gameplay.png"
+            report = json.loads(
+                (game_root / "build" / "generated" / "asset-report.json").read_text()
+            )
+
+            assert not header_path.exists()
+            assert png_size(intro_asset) == (224, 144)
+            assert intro_asset.read_bytes() == native.read_bytes()
+            assert png_size(gameplay_asset) == (128, 64)
+            assert [asset["id"] for asset in report["assets"]] == ["intro", "gameplay"]
+            assert all(asset["converter"] == "wonderful-superfamiconv"
+                       for asset in report["assets"])
+            assert report["uniqueTiles"] > 0 and report["generatedTileBytes"] > 0
+            scene_usage = {item["scene"]: item for item in report["sceneUsage"]}
+            assert scene_usage["intro"]["vramTiles"] > 0
+            assert scene_usage["delivery"]["vramTiles"] > 0
+            assert scene_usage["result"]["vramTiles"] == scene_usage["delivery"]["vramTiles"]
+            assert scene_usage["result"]["palettes"] == scene_usage["delivery"]["palettes"]
+            assert '"Imagegen source SHA-256: ' not in gfx_source
+            assert "#include <swan/legacy.h>" not in gfx_source
+            assert '#include "gameplay_art.h"' not in gfx_source
+            assert '#include "swan_assets.h"' in gfx_source
+            assert "swan_asset_intro_tiles" in gfx_source
+            assert "swan_asset_gameplay_tiles" in gfx_source
             intro_hook = "orbital_gfx_show_intro();"
             render_hook = "orbital_gfx_render("
         else:
+            header = header_path.read_text()
+            assert f"Imagegen source SHA-256: {source_sha}" in header
             intro_tiles_name = "game_intro_tiles"
             intro_map_name = "game_intro_map"
             game_tiles_name = "game_tiles"
@@ -76,20 +99,20 @@ def main() -> None:
             intro_hook = "gfx_show_intro();"
             render_hook = "gfx_render("
 
-        intro_tiles = array_values(header, intro_tiles_name)
-        intro_map = array_values(header, intro_map_name)
-        game_tiles = array_values(header, game_tiles_name)
-        palette = array_values(header, palette_name)
-        assert len(intro_tiles) % 16 == 0 and 0 < len(intro_tiles) // 16 <= 511
-        assert len(intro_map) == 28 * 18
-        assert max(value & 0x01FF for value in intro_map) <= len(intro_tiles) // 16
-        assert len(game_tiles) % 16 == 0 and 0 < len(game_tiles) // 16 <= 511
-        assert len(palette) == 4 and len(set(palette)) == 4
+            intro_tiles = array_values(header, intro_tiles_name)
+            intro_map = array_values(header, intro_map_name)
+            game_tiles = array_values(header, game_tiles_name)
+            palette = array_values(header, palette_name)
+            assert len(intro_tiles) % 16 == 0 and 0 < len(intro_tiles) // 16 <= 511
+            assert len(intro_map) == 28 * 18
+            assert max(value & 0x01FF for value in intro_map) <= len(intro_tiles) // 16
+            assert len(game_tiles) % 16 == 0 and 0 < len(game_tiles) // 16 <= 511
+            assert len(palette) == 4 and len(set(palette)) == 4
+            assert '#include "gameplay_art.h"' in gfx_source
 
         assert '#include "gfx.h"' in main_source
         assert intro_hook in main_source
         assert render_hook in main_source
-        assert '#include "gameplay_art.h"' in gfx_source
         for terminal_call in (
             "#include <stdio.h>", "printf(", "putchar(", "rf_header(",
             "rf_footer(", "rf_clear(", "RF_LOAD_NATIVE_ART",

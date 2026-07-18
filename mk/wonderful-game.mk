@@ -5,6 +5,9 @@ SWAN_GFX_HARDWARE_TILE_CAPACITY ?= $(shell $(SWAN) hardware-tile-capacity --proj
 TARGET := wswan/medium
 include $(WONDERFUL_TOOLCHAIN)/target/$(TARGET)/makedefs.mk
 
+HOST_TEST_NAME ?= $(NAME)
+HOST_TEST := ../../tests/native/build/test_$(HOST_TEST_NAME)
+
 INCLUDEDIRS := include src ../../shared build/generated/include $(SWANSONG_SDK_DIR)/include
 LIBDIRS := $(WF_ARCH_LIBDIRS)
 BUILDDIR := build/obj
@@ -14,7 +17,9 @@ ROM := $(NAME).wsc
 SWANSONG_RUNTIME_BUILD := $(abspath build/swansong-sdk-$(SWAN_GFX_HARDWARE_TILE_CAPACITY))
 SWANSONG_RUNTIME := $(SWANSONG_RUNTIME_BUILD)/$(TARGET)/libswan.a
 GENERATED_STAMP := build/generated/.stamp
-GENERATED_SOURCES_C := build/generated/src/swan_assets.c build/generated/src/swan_config.c
+GENERATED_ASSET_SOURCES_C ?=
+GENERATED_SOURCES_C := build/generated/src/swan_assets.c \
+	build/generated/src/swan_config.c $(GENERATED_ASSET_SOURCES_C)
 GAME_SOURCES_C := $(wildcard src/*.c)
 SHARED_SOURCES_C := ../../shared/swan_game_runtime.c
 GAME_OBJS := $(addprefix $(BUILDDIR)/,$(addsuffix .o,$(GAME_SOURCES_C) $(GENERATED_SOURCES_C)))
@@ -35,9 +40,13 @@ CFLAGS += -std=gnu11 -Wall -Wextra -Werror \
 LDFLAGS := -T$(WF_LDSCRIPT) $(LIBDIRSFLAGS) $(WF_ARCH_LDFLAGS) \
 	-Wl,--start-group -lwse -lwsx -lws -lc -Wl,--end-group
 
-.PHONY: all assets clean sdk-runtime usage
+.PHONY: all assets clean sdk-runtime test usage
 
 all: assets $(ROM) compile_commands.json
+
+test: all
+	$(MAKE) -C ../../tests/native build/test_$(HOST_TEST_NAME)
+	$(HOST_TEST)
 
 assets: $(GENERATED_STAMP)
 

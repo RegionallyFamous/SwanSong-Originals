@@ -18,6 +18,8 @@ SCENARIO_ORDER = (
 SCENARIOS = set(SCENARIO_ORDER)
 MAX_PLAN_FRAMES = 1500  # About 20 seconds at the WonderSwan's 75 Hz cadence.
 MAX_PLAN_EVENTS = 96
+SDK_VERSION = "0.2.0"
+SDK_REVISION = "sha256:a9d93aa45ba8d1d5c5ce62cc04dd9f59692d7e0a849a899f6ceac15118b9b4d0"
 HOLD_INPUTS = {
     "harpoon-moon": {frozenset({"a"}), frozenset({"b"}), frozenset({"a", "b"})},
     "one-last-lap": {frozenset({"a"}), frozenset({"b"})},
@@ -25,7 +27,7 @@ HOLD_INPUTS = {
 }
 AUDIO_SCENARIOS = {
     "mote-sound-terminal": SCENARIOS,
-    "orbital-courier": {"interaction", "success", "failure", "reset", "deterministic"},
+    "orbital-courier": {"interaction", "success", "failure", "deterministic"},
     "scrapframe-garage": {"interaction", "success", "failure", "reset", "deterministic"},
     "radio-ghost": {"interaction", "success", "failure", "reset", "deterministic"},
     "harpoon-moon": {"interaction", "success", "deterministic"},
@@ -135,6 +137,10 @@ def main() -> None:
         budgets = manifest["budgets"]
 
         assert manifest["schema_version"] == 1, slug
+        assert manifest["sdk"] == {
+            "version": SDK_VERSION,
+            "revision": SDK_REVISION,
+        }, slug
         assert game["id"] == slug, slug
         assert game["title"] == plugin[slug]["title"], slug
         assert cartridge["game_id"] == expected_game_id == wonderful["game_id"], slug
@@ -153,6 +159,19 @@ def main() -> None:
         assert cartridge["game_id"] not in seen_ids, slug
         seen_ids.add(cartridge["game_id"])
 
+        if slug == "orbital-courier":
+            assets = {item["id"]: item for item in manifest["assets"]}
+            assert set(assets) == {"intro", "gameplay"}
+            assert assets["intro"]["type"] == "fullscreen"
+            assert assets["gameplay"]["type"] == "metatiles"
+            scene_assets = {item["id"]: item.get("assets", [])
+                            for item in manifest["scenes"]}
+            assert scene_assets == {
+                "intro": ["intro"],
+                "delivery": ["gameplay"],
+                "result": ["gameplay"],
+            }
+
         plans: dict[str, dict[str, object]] = {}
         for scenario in scenarios:
             assert scenario["required_checks"], (slug, scenario["id"])
@@ -163,6 +182,21 @@ def main() -> None:
             plan.relative_to(root.resolve())
             plans[scenario["id"]] = validate_plan(plan, slug)
         assert plans["deterministic"] == plans["success"], slug
+        if slug == "orbital-courier":
+            exercised = {
+                event["inputs"][0]
+                for plan in plans.values()
+                for event in plan["events"]
+                if len(event["inputs"]) == 1 and event["inputs"][0].startswith("x")
+            }
+            assert {"x1", "x2", "x3", "x4"} <= exercised
+            reset = plans["reset"]
+            reset_inputs = [event for event in reset["events"] if event["inputs"]]
+            assert reset_inputs[0]["frameIndex"] >= 90, "Orbital starts before scene-ready"
+            assert sum(event["inputs"] in (["x2"], ["x4"])
+                       for event in reset_inputs) == 40
+            assert reset_inputs[-1]["inputs"] == ["a"]
+            assert reset["totalFrames"] - reset_inputs[-1]["frameIndex"] >= 60
         rom = next(root.glob("*.wsc"), None)
         if rom is not None:
             assert rom.stat().st_size <= budgets["rom_bytes"], slug

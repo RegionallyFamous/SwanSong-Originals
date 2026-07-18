@@ -15,7 +15,8 @@ SOURCE = ROOT / "docs" / "art" / "full-screen" / "orbital-courier-gameplay-maste
 NATIVE = ROOT / "docs" / "art" / "full-screen" / "orbital-courier-gameplay-native.png"
 ATLAS = ROOT / "docs" / "art" / "full-screen" / "orbital-courier-gameplay-atlas.png"
 LEGACY_PREVIEW = ROOT / "docs" / "art" / "native" / "orbital-courier.png"
-HEADER = ROOT / "games" / "orbital-courier" / "src" / "gameplay_art.h"
+INTRO_ASSET = ROOT / "games" / "orbital-courier" / "assets" / "graphics" / "intro.png"
+GAMEPLAY_ASSET = ROOT / "games" / "orbital-courier" / "assets" / "graphics" / "gameplay.png"
 
 CREAM = (0xF5, 0xF0, 0xE6)
 INK = (0x1A, 0x1A, 0x1A)
@@ -53,60 +54,6 @@ def native_master() -> Image.Image:
 		source = source.crop((0, top, source.width, top + height))
 	source = source.resize((224, 144), Image.Resampling.LANCZOS)
 	return quantize_exact(source)
-
-
-def flip_h(tile: tuple[int, ...]) -> tuple[int, ...]:
-	return tuple(tile[y * 8 + (7 - x)] for y in range(8) for x in range(8))
-
-
-def flip_v(tile: tuple[int, ...]) -> tuple[int, ...]:
-	return tuple(tile[(7 - y) * 8 + x] for y in range(8) for x in range(8))
-
-
-def pack_tile(tile: tuple[int, ...]) -> bytes:
-	data = bytearray()
-	for y in range(8):
-		plane_0 = 0
-		plane_1 = 0
-		for x in range(8):
-			value = tile[y * 8 + x]
-			bit = 7 - x
-			plane_0 |= (value & 1) << bit
-			plane_1 |= ((value >> 1) & 1) << bit
-		data.extend((plane_0, plane_1))
-	return bytes(data)
-
-
-def intro_tiles(image: Image.Image) -> tuple[bytes, list[int]]:
-	pixels = tuple(image.get_flattened_data())
-	tiles: list[tuple[int, ...]] = []
-	lookup: dict[tuple[int, ...], tuple[int, int]] = {}
-	tilemap: list[int] = []
-	blank = (0,) * 64
-	for tile_y in range(18):
-		for tile_x in range(28):
-			tile = tuple(
-				pixels[(tile_y * 8 + y) * 224 + tile_x * 8 + x]
-				for y in range(8) for x in range(8)
-			)
-			if tile == blank:
-				tilemap.append(0)
-				continue
-			match = lookup.get(tile)
-			if match is None:
-				index = len(tiles) + 1
-				tiles.append(tile)
-				for variant, flags in (
-					(tile, 0),
-					(flip_h(tile), 0x4000),
-					(flip_v(tile), 0x8000),
-					(flip_v(flip_h(tile)), 0xC000),
-				):
-					lookup.setdefault(variant, (index, flags))
-				match = (index, 0)
-			tilemap.append(match[0] | match[1])
-	assert len(tiles) <= 511
-	return b"".join(pack_tile(tile) for tile in tiles), tilemap
 
 
 def image16(fill: int = 0) -> Image.Image:
@@ -246,79 +193,37 @@ def loop_icon() -> Image.Image:
 	return image
 
 
-class TileBank:
-	def __init__(self) -> None:
-		self.tiles: list[tuple[int, ...]] = []
-		self.lookup: dict[tuple[int, ...], int] = {}
-
-	def add_tile(self, image: Image.Image) -> int:
-		tile = tuple(image.get_flattened_data())
-		if tile not in self.lookup:
-			self.lookup[tile] = len(self.tiles)
-			self.tiles.append(tile)
-		return self.lookup[tile]
-
-	def add_image(self, image: Image.Image) -> list[int]:
-		ids = []
-		for tile_y in range(image.height // 8):
-			for tile_x in range(image.width // 8):
-				ids.append(self.add_tile(image.crop((tile_x * 8, tile_y * 8,
-					(tile_x + 1) * 8, (tile_y + 1) * 8))))
-		return ids
-
-	def packed(self) -> bytes:
-		return b"".join(pack_tile(tile) for tile in self.tiles)
-
-
-def c_bytes(data: bytes, width: int = 12) -> str:
-	return "\n".join(
-		"\t" + ", ".join(f"0x{value:02X}" for value in data[i:i + width]) + ","
-		for i in range(0, len(data), width)
-	)
-
-
-def c_words(data: list[int], width: int = 8) -> str:
-	return "\n".join(
-		"\t" + ", ".join(f"0x{value:04X}" for value in data[i:i + width]) + ","
-		for i in range(0, len(data), width)
-	)
-
-
-def rgb12(color: tuple[int, int, int]) -> int:
-	r, g, b = (round(value * 15 / 255) for value in color)
-	return (r << 8) | (g << 4) | b
-
-
 def main() -> None:
 	native = native_master()
 	native.save(NATIVE)
 	native.resize((448, 288), Image.Resampling.NEAREST).save(LEGACY_PREVIEW)
-	intro_data, intro_map = intro_tiles(native)
+	INTRO_ASSET.parent.mkdir(parents=True, exist_ok=True)
+	native.save(INTRO_ASSET)
 
-	bank = TileBank()
-	assets = {
-		"floor_a": bank.add_image(floor_meta(0)),
-		"floor_b": bank.add_image(floor_meta(1)),
-		"wall": bank.add_image(wall_meta(False)),
-		"outer_wall": bank.add_image(wall_meta(True)),
-		"parcel": bank.add_image(parcel_meta()),
-		"depot": bank.add_image(depot_meta()),
-		"courier_a": bank.add_image(courier_meta(False, False)),
-		"courier_b": bank.add_image(courier_meta(False, True)),
-		"courier_carry_a": bank.add_image(courier_meta(True, False)),
-		"courier_carry_b": bank.add_image(courier_meta(True, True)),
-		"hud_bg": [bank.add_tile(hud_tile("bg"))],
-		"fuel_full": [bank.add_tile(hud_tile("fuel_full"))],
-		"fuel_empty": [bank.add_tile(hud_tile("fuel_empty"))],
-		"route_on": [bank.add_tile(hud_tile("route_on"))],
-		"route_off": [bank.add_tile(hud_tile("route_off"))],
-		"cargo_empty": bank.add_image(cargo_hud(False)),
-		"cargo_full": bank.add_image(cargo_hud(True)),
-		"target_hud": bank.add_image(target_hud()),
-		"result_win": bank.add_image(result_icon(True)),
-		"result_loss": bank.add_image(result_icon(False)),
-		"loop": bank.add_image(loop_icon()),
-	}
+	# Versioned, native-size production sheet consumed by the SDK asset compiler.
+	# The fixed layout is deliberately simple: the renderer addresses regions of
+	# the generated tilemap, never Wonderful's deduplicated tile numbers.
+	gameplay = Image.new("P", (128, 64), 0)
+	gameplay.putpalette(native.getpalette())
+	for x, image in enumerate((
+		floor_meta(0), floor_meta(1), wall_meta(False), wall_meta(True),
+		parcel_meta(), depot_meta(), courier_meta(False, False),
+		courier_meta(False, True),
+	)):
+		gameplay.paste(image, (x * 16, 0))
+	for x, image in enumerate((
+		courier_meta(True, False), courier_meta(True, True), cargo_hud(False),
+		cargo_hud(True), target_hud(), loop_icon(),
+	)):
+		gameplay.paste(image, (x * 16, 16))
+	for x, kind in enumerate((
+		"bg", "fuel_full", "fuel_empty", "route_on",
+	)):
+		gameplay.paste(hud_tile(kind), (96 + x * 8, 16))
+	gameplay.paste(hud_tile("route_off"), (96, 24))
+	gameplay.paste(result_icon(True), (0, 32))
+	gameplay.paste(result_icon(False), (32, 32))
+	gameplay.save(GAMEPLAY_ASSET)
 
 	# Human-review atlas: native assets enlarged 4x, grouped without labels.
 	atlas_native = Image.new("P", (128, 80), 0)
@@ -335,45 +240,8 @@ def main() -> None:
 		atlas_native.paste(preview, (x, y))
 	atlas_native.resize((512, 320), Image.Resampling.NEAREST).save(ATLAS)
 
-	palette = [rgb12(color) for color in PALETTE]
 	source_hash = hashlib.sha256(SOURCE.read_bytes()).hexdigest()
-	asset_defs = "\n\n".join(
-		f"static const uint16_t __far orbital_{name}[] = {{\n{c_words(values, 8)}\n}};"
-		for name, values in assets.items()
-	)
-	HEADER.write_text(f"""/* Generated by tools/build_orbital_gameplay_art.py.
- * Imagegen source SHA-256: {source_hash}
- */
-#ifndef SWANSONG_ORBITAL_GAMEPLAY_ART_H
-#define SWANSONG_ORBITAL_GAMEPLAY_ART_H
-
-#include <stdint.h>
-#include <wonderful.h>
-
-static const uint16_t __far orbital_palette[] = {{
-{c_words(palette, 4)}
-}};
-
-static const uint8_t __far orbital_intro_tiles[] = {{
-{c_bytes(intro_data)}
-}};
-
-static const uint16_t __far orbital_intro_map[] = {{
-{c_words(intro_map)}
-}};
-
-static const uint8_t __far orbital_game_tiles[] = {{
-{c_bytes(bank.packed())}
-}};
-
-{asset_defs}
-
-#define ORBITAL_INTRO_TILE_COUNT {len(intro_data) // 16}
-#define ORBITAL_GAME_TILE_COUNT {len(bank.tiles)}
-
-#endif
-""", encoding="utf-8")
-	print(f"intro tiles: {len(intro_data) // 16}; gameplay tiles: {len(bank.tiles)}")
+	print(f"Orbital Courier SDK assets generated from master {source_hash}")
 
 
 if __name__ == "__main__":

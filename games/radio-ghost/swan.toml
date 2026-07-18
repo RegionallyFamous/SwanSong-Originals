@@ -1,5 +1,9 @@
 schema_version = 1
 
+[sdk]
+version = "0.2.0"
+revision = "sha256:a9d93aa45ba8d1d5c5ce62cc04dd9f59692d7e0a849a899f6ceac15118b9b4d0"
+
 [game]
 id = "radio-ghost"
 title = "Radio Ghost"
