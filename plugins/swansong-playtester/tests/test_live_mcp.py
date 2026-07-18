@@ -20,6 +20,8 @@ EXPECTED_TOOLS = {
     "swansong_status",
     "swansong_navigate",
     "swansong_player",
+    "swansong_studio_projects",
+    "swansong_studio_action",
     "swansong_playtest_plan",
     "swansong_observed_play_start",
     "swansong_observed_play_resume",
@@ -29,10 +31,12 @@ EXPECTED_TOOLS = {
     "swansong_translation_capture_plan",
     "swansong_translation_probe_rectangle",
     "swansong_translation_probe_rectangle_source",
+    "swansong_translation_export_static_analysis_seed",
     "swansong_translation_record_route",
     "swansong_translation_verify_pair",
 }
 PROJECT_WRITE_TOOLS = {
+    "swansong_studio_action",
     "swansong_observed_play_start",
     "swansong_observed_play_resume",
     "swansong_observed_play_finish",
@@ -40,6 +44,7 @@ PROJECT_WRITE_TOOLS = {
     "swansong_translation_capture_plan",
     "swansong_translation_probe_rectangle",
     "swansong_translation_probe_rectangle_source",
+    "swansong_translation_export_static_analysis_seed",
     "swansong_translation_record_route",
     "swansong_translation_verify_pair",
 }

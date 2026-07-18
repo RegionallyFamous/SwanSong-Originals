@@ -1,7 +1,7 @@
 {
   "name": "swansong-playtester",
-  "version": "0.2.0",
-  "description": "Play SwanSong ROMs and run guarded Translation Lab capture, provenance, and observed-play workflows through SwanSong's deterministic MCP tools.",
+  "version": "0.3.0",
+  "description": "Play SwanSong ROMs, validate WonderSwan-native interaction patterns, and run guarded Translation Lab evidence workflows through SwanSong's deterministic MCP tools.",
   "author": {
     "name": "Regionally Famous",
     "url": "https://github.com/RegionallyFamous"
@@ -20,7 +20,7 @@
   "interface": {
     "displayName": "SwanSong Playtester",
     "shortDescription": "Play ROMs and run guarded Translation Lab evidence workflows.",
-    "longDescription": "Connects Codex to SwanSong's full deterministic MCP server. Codex can inspect native screenshots, listen to the final audio window, apply exact-frame controls, retain recoverable observed-play sessions, create private paired Translation Lab captures, and run bounded source-free display provenance probes.",
+    "longDescription": "Connects Codex to SwanSong's full deterministic MCP server. Codex can inspect native screenshots, listen to the final audio window, apply exact-frame controls and dual-cluster gestures, retain recoverable observed-play sessions, create private paired Translation Lab captures, and run bounded source-free display provenance probes.",
     "developerName": "Regionally Famous",
     "category": "Developer Tools",
     "capabilities": [
