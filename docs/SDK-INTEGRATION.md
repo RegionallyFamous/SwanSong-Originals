@@ -2,8 +2,8 @@
 
 ## Current integration boundary
 
-All ten cartridges build against the content-addressed SwanSong SDK v0.4.0
-submodule. Every schema-v1 `swan.toml` records the resolved 0.4.0 payload hash,
+All ten cartridges build against the content-addressed SwanSong SDK v0.5.0
+submodule. Every schema-v1 `swan.toml` records the resolved 0.5.0 payload hash,
 so `swan doctor` and `swan release` reject an accidental SDK substitution. The
 manifest remains the source for cartridge configuration, semantic controls,
 scene IDs, budgets, and fresh-boot SwanSong plans. The SDK owns `main`, VBlank,
@@ -32,7 +32,7 @@ make -C games/orbital-courier \
 ```
 
 It defaults to the initialized `vendor/swansong-sdk` submodule, pinned to the
-v0.4.0 release. The override is intended for forward-compatibility testing;
+v0.5.0 release. The override is intended for forward-compatibility testing;
 release evidence must record the SDK revision actually used.
 
 Run the contract verifier independently with:
@@ -87,7 +87,7 @@ the contract set does not invent save/restart or fixed-RTC scenarios.
 ## Initial budget baseline
 
 The original ten-game lifecycle baseline was measured before asset migration.
-Orbital Courier and Mote Sound Terminal now come from SDK v0.4.0
+Orbital Courier and Mote Sound Terminal now come from the SDK
 `swan report --json`; the other eight rows remain their pre-asset-migration
 baseline until each canary is converted. Values are decimal bytes and show actual usage followed by the
 applicable project gate or hardware ceiling. Every measured report has an empty

@@ -78,7 +78,7 @@ Locally and continuously validated package revisions are recorded in
 The [SwanSong SDK integration](docs/SDK-INTEGRATION.md) records the ten
 schema-v1 game manifests, deterministic play contracts, resource budgets, and
 migration lessons. Release builds use the content-addressed
-`vendor/swansong-sdk` v0.4.0 submodule. `SWANSONG_SDK_DIR` can still select
+`vendor/swansong-sdk` v0.5.0 submodule. `SWANSONG_SDK_DIR` can still select
 another SDK checkout for local compatibility testing.
 
 ## Repository map

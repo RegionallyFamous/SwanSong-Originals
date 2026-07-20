@@ -19,8 +19,8 @@ SCENARIOS = set(SCENARIO_ORDER)
 EXTRA_SCENARIOS = {"one-last-lap": ("solo",)}
 MAX_PLAN_FRAMES = 2700  # About 36 seconds at the WonderSwan's 75 Hz cadence.
 MAX_PLAN_EVENTS = 192
-SDK_VERSION = "0.4.0"
-SDK_REVISION = "sha256:4a08d6fa29bf49947576292574d0d868003add6537e01aa0438c4b6eedb85ffe"
+SDK_VERSION = "0.5.0"
+SDK_REVISION = "sha256:905d1b7683ea55aebb90703bc4dc708ae7a436c98dae1474e67c9df89601a35c"
 HOLD_INPUTS = {
     "harpoon-moon": {frozenset({"a"}), frozenset({"b"}), frozenset({"a", "b"})},
     "one-last-lap": {
