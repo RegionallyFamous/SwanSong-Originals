@@ -1,16 +1,17 @@
 # SwanSong Originals
 
-Ten small, original WonderSwan Color games sharing one engine. Each project
-builds as its own `.wsc` cartridge and is complete within a deliberately compact
-microgame scope: controls, gameplay state, feedback, an ending or continuous
-utility loop, and a clean replay/reset path.
+Ten original WonderSwan Color projects sharing one engine. Each builds as its
+own `.wsc` cartridge. The original v1 collection proves portable game rules,
+native graphics, deterministic outcomes, and clean replay/reset paths; a v2
+production rebuild is now adding the presentation, audio, teaching, depth, and
+replay structure expected of finished handheld games.
 
 ![All ten games running with native pixel-zine graphics](docs/qa/boot-frames.png)
 
-All ten cartridges now use complete Imagegen-directed gameplay screens rather
-than text layouts with decorative art stamps. Their playfields, characters,
-objects, meters, selections, and result states are native graphical tiles with
-icon-only HUDs. The original Yohaku style contract, source masters, prompt
+The v1 visual baseline replaced text layouts with Imagegen-directed source art
+converted into native graphical tiles. That work established a distinctive
+look and asset provenance; it is not treated as proof that the resulting
+microgames are complete. The Yohaku style contract, source masters, prompt
 formula, hashes, conversion tools, learning log, sprite atlases, and native
 proofs are documented in [docs/art/full-screen/](docs/art/full-screen/).
 
@@ -31,13 +32,23 @@ proofs are documented in [docs/art/full-screen/](docs/art/full-screen/).
 
 Detailed rules and controls are in [docs/CONCEPTS.md](docs/CONCEPTS.md).
 
-## Completion and testing
+## Production rebuild and testing
 
-The current software scope is complete and tested as ten short-session games.
-The test suite covers cartridge metadata, UI bounds, authored puzzle/route
-solvability, complete deterministic endings, failure and reset paths, native
-art provenance/tilemap integrity, every full-screen graphical renderer, and 61
-fresh-boot SwanSong scenarios across all ten ROMs.
+The v1 software scope is structurally complete and tested, but that is no
+longer treated as proof of player-facing quality. The test suite covers
+cartridge metadata, UI bounds, authored puzzle/route solvability, deterministic
+endings, failure and reset paths, native-art provenance/tilemap integrity,
+renderers, and fresh-boot SwanSong scenarios across all ten ROMs.
+
+The cited [WonderSwan player-design research](docs/WONDERSWAN_PLAYER_DESIGN_RESEARCH.md),
+hardware-grounded [game quality standard](docs/GAME_QUALITY_STANDARD.md), and
+[rebuild roadmap](docs/GAME_REBUILD_ROADMAP.md) turn the 224×144 display,
+3.072 MHz CPU, shared RAM, tile, sprite, scanline, input, and four-channel audio
+limits into concrete game-design and release gates. Those gates cover a
+persistent title and complete game flow, onboarding, background music and SFX,
+session pacing, measured CPU/RAM/VRAM/sprite budgets, inspected SwanSong media,
+and uncoached local playtesting. `make quality` reports the honest migration
+baseline; it does not relabel automated execution as fun.
 
 ```sh
 make clean test

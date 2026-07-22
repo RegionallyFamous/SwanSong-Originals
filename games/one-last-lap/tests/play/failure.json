@@ -1,1 +1,1 @@
-{"schema":"swan-song-frame-input-plan-v1","totalFrames":1200,"events":[{"frameIndex":0,"inputs":[]},{"frameIndex":120,"inputs":["a","b"]},{"frameIndex":1050,"inputs":[]}]}
+{"schema":"swan-song-frame-input-plan-v1","totalFrames":3600,"events":[{"frameIndex":0,"inputs":[]},{"frameIndex":120,"inputs":["start"]},{"frameIndex":121,"inputs":[]},{"frameIndex":346,"inputs":["a","b"]},{"frameIndex":3350,"inputs":[]}]}

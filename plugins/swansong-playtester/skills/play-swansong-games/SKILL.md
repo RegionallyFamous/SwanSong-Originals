@@ -14,6 +14,9 @@ reproduce, or validate a SwanSong Originals or SDK-built ROM.
    checks as the test contract. Resolve its ROM beneath the repository `dist/`
    directory and run `make dist` first whenever source is newer than that ROM.
    For other SDK projects, use `swan.toml` and its generated play contracts.
+   Read `references/hardware-production-contract.md` before judging any ROM;
+   it separates WonderSwan hardware facts, conservative production margins,
+   and observations SwanSong cannot establish by itself.
    Read `references/wwgp-design-patterns.md` when the ROM uses both direction
    clusters, gestures, spatial audio, suspend/resume, an editor, a utility loop,
    or procedural content.
@@ -28,6 +31,9 @@ reproduce, or validate a SwanSong Originals or SDK-built ROM.
    A documented success must reach the actual result or ending state; a first
    pickup, lock, tag, room, lap, photo, or legal move is interaction evidence,
    not completion evidence.
+   Require checked-in machine outcome contracts for success, failure, reset,
+   deterministic replay, and every additional ending. Prose checks guide visual
+   inspection but cannot turn a wrong ending into a passing tool result.
 4. Maintain one accumulated `swan-song-frame-input-plan-v1` per game. Each
    ordinary press is a native SwanSong input held for one frame followed by at
    least two neutral frames. Preserve declared press durations and same-frame
@@ -45,9 +51,16 @@ reproduce, or validate a SwanSong Originals or SDK-built ROM.
    When applicable, separately cover double-tap, hold/release, chord, dual-actor,
    stereo-location, suspend consumption, profile persistence, editor dirty state,
    procedural reachability, and fixed-pool exhaustion.
+   Capture the densest valid play state when validating hardware fit: maximum
+   actors and effects on one scanline, active HUD/overlay, scrolling, music and
+   priority SFX, and the most expensive bounded gameplay work together.
 8. Repeat an unchanged plan once when determinism matters; its capture hash and
-   report must match. Report the complete plan and SwanSong evidence metadata
-   for every failure.
+   report must match. When a game emits a state hash, require the portable model
+   to serialize or explicitly mix every gameplay-relevant field, including
+   results and scores; raw struct bytes are invalid because padding can vary.
+   Host-test coverage by changing each field and requiring the canonical hash to
+   change. Report the complete plan and SwanSong evidence metadata for every
+   failure.
 9. When a scheduled transition appears ignored, separate input delivery from
    game sampling. First run SwanSong's exact input-frame bridge fixture; then
    compare host frame indices with the game's session/update tick or profiler

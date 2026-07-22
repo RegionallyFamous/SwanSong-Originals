@@ -11,18 +11,12 @@ static const swan_instrument_t SWAN_FAR feedback_instrument = {
 	.release = 0,
 };
 
-static swan_audio_row_t SWAN_FAR feedback_rows[2] = {
-	{{{36, 0, 8},
-	  {SWAN_AUDIO_NO_CHANGE, SWAN_AUDIO_NO_CHANGE, SWAN_AUDIO_NO_CHANGE},
-	  {SWAN_AUDIO_NO_CHANGE, SWAN_AUDIO_NO_CHANGE, SWAN_AUDIO_NO_CHANGE},
-	  {SWAN_AUDIO_NO_CHANGE, SWAN_AUDIO_NO_CHANGE, SWAN_AUDIO_NO_CHANGE}}},
-	{{{SWAN_AUDIO_NOTE_OFF, SWAN_AUDIO_NO_CHANGE, 0},
-	  {SWAN_AUDIO_NO_CHANGE, SWAN_AUDIO_NO_CHANGE, SWAN_AUDIO_NO_CHANGE},
-	  {SWAN_AUDIO_NO_CHANGE, SWAN_AUDIO_NO_CHANGE, SWAN_AUDIO_NO_CHANGE},
-	  {SWAN_AUDIO_NO_CHANGE, SWAN_AUDIO_NO_CHANGE, SWAN_AUDIO_NO_CHANGE}}},
+static swan_sfx_step_t SWAN_FAR feedback_steps[2] = {
+	{{36, 0, 8}, 1},
+	{{SWAN_AUDIO_NOTE_OFF, SWAN_AUDIO_NO_CHANGE, 0}, 1},
 };
-static swan_song_t SWAN_FAR feedback_song = {
-	feedback_rows, 2, 256, false
+static swan_sfx_t SWAN_FAR feedback_effect = {
+	feedback_steps, 2, 8
 };
 
 static uint16_t note_frequency(uint8_t note) {
@@ -50,12 +44,11 @@ static uint8_t nearest_note(uint16_t hz) {
 }
 
 static void play_feedback(uint16_t hz, uint8_t volume, uint8_t duration_frames) {
-	feedback_rows[0].channel[0].note = nearest_note(hz);
-	feedback_rows[0].channel[0].instrument = 0;
-	feedback_rows[0].channel[0].volume = volume > 15 ? 15 : volume;
-	feedback_song.frames_per_row_q8 =
-		(uint16_t)(duration_frames == 0 ? 1 : duration_frames) << 8;
-	swan_audio_play_music(&feedback_song);
+	feedback_steps[0].command.note = nearest_note(hz);
+	feedback_steps[0].command.instrument = 0;
+	feedback_steps[0].command.volume = volume > 15 ? 15 : volume;
+	feedback_steps[0].duration_frames = duration_frames == 0 ? 1 : duration_frames;
+	(void)swan_audio_play_sfx(&feedback_effect);
 }
 
 int8_t swan_game_primary_axis(uint16_t keys) {
@@ -68,7 +61,11 @@ bool swan_game_intro_complete(const swan_frame_t *frame) {
 }
 
 void swan_game_audio_init(void) {
+	swan_audio_sfx_policy_t policy = SWAN_AUDIO_SFX_POLICY_DEFAULT;
 	swan_audio_init(&feedback_instrument, 1);
+	policy.preferred_channel = 3;
+	policy.reserved_channel_mask = (uint8_t)(1u << 3);
+	swan_audio_set_sfx_policy(&policy);
 }
 
 void swan_game_audio_beep(uint16_t hz, uint8_t duration_frames) {

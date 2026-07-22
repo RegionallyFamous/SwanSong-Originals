@@ -63,11 +63,14 @@ sessions rather than unfinished slices of larger campaigns.
 
 ## 9. One Last Lap
 
-- **Loop:** accelerate, brake, and change lanes through three laps while battery
-  drains on movement. Tow the stranded rival for the cooperative ending or
-  finish alone; empty battery ends the run.
-- **Controls:** left/right changes lane; A accelerates; B brakes; hold Start tows
-  in the lap-two rescue zone.
+- **Loop:** race three continuous laps against three moving rivals, change lanes
+  around hazards, manage speed and battery, and improve the final rank and
+  score. Slow into the marked lap-two rescue lane and signal a tow for the
+  cooperative ending, or keep racing for the solo ending; collisions and
+  sustained throttle/brake strain can end the run.
+- **Controls:** left/right changes lane; A accelerates; B brakes; down on either
+  directional cluster signals the tow in its rescue window; Start pauses. On
+  results, A races again and Start returns to the title.
 
 ## 10. Bug Witch
 

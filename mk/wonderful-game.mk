@@ -3,6 +3,8 @@ SWANSONG_SDK_DIR ?= $(abspath ../../vendor/swansong-sdk)
 SWAN ?= env PYTHONPATH=$(SWANSONG_SDK_DIR)/python python3 -m swansong_sdk.cli
 SWAN_GFX_HARDWARE_TILE_CAPACITY ?= $(shell $(SWAN) hardware-tile-capacity --project swan.toml)
 TARGET := wswan/medium
+SWAN_TRACE ?= 0
+SWAN_TRACE_CAPACITY ?= 64
 include $(WONDERFUL_TOOLCHAIN)/target/$(TARGET)/makedefs.mk
 
 HOST_TEST_NAME ?= $(NAME)
@@ -10,11 +12,12 @@ HOST_TEST := ../../tests/native/build/test_$(HOST_TEST_NAME)
 
 INCLUDEDIRS := include src ../../shared build/generated/include $(SWANSONG_SDK_DIR)/include
 LIBDIRS := $(WF_ARCH_LIBDIRS)
-BUILDDIR := build/obj
+BUILD_VARIANT := tiles$(SWAN_GFX_HARDWARE_TILE_CAPACITY)-trace$(SWAN_TRACE)-$(SWAN_TRACE_CAPACITY)
+BUILDDIR := build/obj/$(BUILD_VARIANT)
 ELF := build/$(NAME).elf
 ELF_STAGE1 := build/$(NAME)_stage1.elf
 ROM := $(NAME).wsc
-SWANSONG_RUNTIME_BUILD := $(abspath build/swansong-sdk-$(SWAN_GFX_HARDWARE_TILE_CAPACITY))
+SWANSONG_RUNTIME_BUILD := $(abspath build/swansong-sdk-$(SWAN_GFX_HARDWARE_TILE_CAPACITY)-trace$(SWAN_TRACE)-$(SWAN_TRACE_CAPACITY))
 SWANSONG_RUNTIME := $(SWANSONG_RUNTIME_BUILD)/$(TARGET)/libswan.a
 GENERATED_STAMP := build/generated/.stamp
 GENERATED_ASSET_SOURCES_C ?=
@@ -36,6 +39,8 @@ INCLUDEFLAGS := $(foreach path,$(INCLUDEDIRS),-I$(path)) \
 LIBDIRSFLAGS := $(foreach path,$(LIBDIRS),-L$(path)/lib)
 CFLAGS += -std=gnu11 -Wall -Wextra -Werror \
 	-DSWAN_GFX_HARDWARE_TILE_CAPACITY=$(SWAN_GFX_HARDWARE_TILE_CAPACITY) $(WF_ARCH_CFLAGS) \
+	-DSWAN_DETERMINISTIC_TRACE=$(SWAN_TRACE) \
+	-DSWAN_DEBUG_FRAME_TRACE_CAPACITY=$(SWAN_TRACE_CAPACITY) \
 	$(INCLUDEFLAGS) -ffunction-sections -fdata-sections -fno-common -O2
 LDFLAGS := -T$(WF_LDSCRIPT) $(LIBDIRSFLAGS) $(WF_ARCH_LDFLAGS) \
 	-Wl,--start-group -lwse -lwsx -lws -lc -Wl,--end-group
@@ -62,7 +67,9 @@ sdk-runtime: $(SWANSONG_RUNTIME)
 $(SWANSONG_RUNTIME): $(SDK_RUNTIME_INPUTS)
 	$(MAKE) -C $(SWANSONG_SDK_DIR) -f mk/runtime-library.mk \
 		TARGET=$(TARGET) BUILD_ROOT=$(SWANSONG_RUNTIME_BUILD) \
-		SWAN_GFX_HARDWARE_TILE_CAPACITY=$(SWAN_GFX_HARDWARE_TILE_CAPACITY) all
+		SWAN_GFX_HARDWARE_TILE_CAPACITY=$(SWAN_GFX_HARDWARE_TILE_CAPACITY) \
+		SWAN_DETERMINISTIC_TRACE=$(SWAN_TRACE) \
+		SWAN_DEBUG_FRAME_TRACE_CAPACITY=$(SWAN_TRACE_CAPACITY) all
 
 $(ROM) $(ELF): $(ELF_STAGE1) wfconfig.toml
 	@echo "  ROM     $@"
@@ -89,6 +96,7 @@ usage: $(ELF)
 
 clean:
 	rm -rf $(ROM) $(BUILDDIR) compile_commands.json
+	rm -rf build/obj
 	rm -rf build/generated build/swansong-sdk-* build/$(NAME).elf build/$(NAME)_stage1.elf
 
 -include $(DEPS)

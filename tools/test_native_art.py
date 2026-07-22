@@ -119,7 +119,10 @@ def main() -> None:
             intro_map_name = "game_intro_map"
             game_tiles_name = "game_tiles"
             palette_name = "game_palette"
-            intro_hook = "gfx_show_intro();"
+            intro_hook = (
+                "gfx_show_intro(title_prompt);" if slug == "one-last-lap"
+                else "gfx_show_intro();"
+            )
             render_hook = "gfx_render("
 
             intro_tiles = array_values(header, intro_tiles_name)
