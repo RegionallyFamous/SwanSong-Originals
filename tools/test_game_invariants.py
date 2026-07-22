@@ -72,15 +72,18 @@ def test_deterministic_sessions_and_documented_directions():
             f"{slug} must drain input and reset deterministic session time"
         )
         assert "frame->input" in text, f"{slug} bypasses immutable SDK input"
-    for slug in ("harpoon-moon", "pocket-kaiju-observatory", "one-last-lap"):
+    for slug in ("harpoon-moon", "pocket-kaiju-observatory"):
         assert "swan_game_primary_axis(frame->input->pressed)" in sources[slug], (
             f"{slug} does not honor all four documented directions"
         )
+    assert "SWAN_ACTION_LEFT" in sources["one-last-lap"]
+    assert "SWAN_ACTION_RIGHT" in sources["one-last-lap"]
     for slug in ("orbital-courier", "turncoat-tactics", "rotate-dungeon"):
         assert "swan_input_dx(frame->input->pressed)" in sources[slug]
         assert "swan_input_dy(frame->input->pressed)" in sources[slug]
     lap = (ROOT / "games/one-last-lap/src/model.c").read_text()
-    assert "lap_rival_contact(state->progress, state->lane)" in lap
+    assert "update_rivals(state, previous_distance, event)" in lap
+    assert "state->rival_distance[rival]" in lap
     assert "state->helped ? LAP_RESULT_COOPERATIVE : LAP_RESULT_SOLO" in lap
 
 

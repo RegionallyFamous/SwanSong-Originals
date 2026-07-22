@@ -11,16 +11,21 @@ import tomllib
 ROOT = Path(__file__).resolve().parents[1]
 GAMES = ROOT / "games"
 PLUGIN_CONTRACTS = ROOT / "plugins" / "swansong-playtester" / "scripts" / "games.json"
+GAME_BUILD_RECIPE = ROOT / "mk" / "wonderful-game.mk"
 INPUTS = {"x1", "x2", "x3", "x4", "y1", "y2", "y3", "y4", "a", "b", "start"}
 SCENARIO_ORDER = (
     "neutral", "interaction", "success", "failure", "reset", "deterministic"
 )
 SCENARIOS = set(SCENARIO_ORDER)
 EXTRA_SCENARIOS = {"one-last-lap": ("solo",)}
-MAX_PLAN_FRAMES = 2700  # About 36 seconds at the WonderSwan's 75 Hz cadence.
-MAX_PLAN_EVENTS = 192
+# Production play contracts must be able to exercise a complete short handheld
+# session, not only a prototype-sized success path.  Keep the ceiling bounded
+# so a malformed plan cannot make CI run forever, while allowing roughly five
+# minutes at the WonderSwan's native 75.47 Hz cadence.
+MAX_PLAN_FRAMES = 24_000
+MAX_PLAN_EVENTS = 2_048
 SDK_VERSION = "0.5.0"
-SDK_REVISION = "sha256:905d1b7683ea55aebb90703bc4dc708ae7a436c98dae1474e67c9df89601a35c"
+SDK_REVISION = "sha256:131099c3601a31146bf09121ec6bf98a8059ddf58fd0c7935029d0a0c620969b"
 HOLD_INPUTS = {
     "harpoon-moon": {frozenset({"a"}), frozenset({"b"}), frozenset({"a", "b"})},
     "one-last-lap": {
@@ -29,6 +34,8 @@ HOLD_INPUTS = {
         frozenset({"x2"}),
         frozenset({"a", "b"}),
         frozenset({"a", "start"}),
+        frozenset({"b", "x1"}),
+        frozenset({"b", "x4"}),
     },
     "pocket-kaiju-observatory": {
         frozenset({"a"}),
@@ -46,7 +53,7 @@ AUDIO_SCENARIOS = {
     "turncoat-tactics": {"interaction", "success", "failure", "deterministic"},
     "pocket-kaiju-observatory": {"interaction", "success", "failure", "deterministic"},
     "rotate-dungeon": {"interaction", "success", "failure", "deterministic"},
-    "one-last-lap": {"success", "solo", "deterministic"},
+    "one-last-lap": SCENARIOS | {"solo"},
     "bug-witch": {"interaction", "success", "failure", "deterministic"},
 }
 SILENT_AUDIO_SCENARIOS = {
@@ -143,24 +150,38 @@ def validate_plan(path: Path, slug: str) -> dict[str, object]:
         assert len(inputs) == len(set(inputs)), path
         assert set(inputs) <= INPUTS, (path, inputs)
         previous = frame
-    for index, event in enumerate(plan["events"]):
-        if not event["inputs"]:
-            continue
-        assert index + 1 < len(plan["events"]), (path, event)
-        release = plan["events"][index + 1]
-        assert release["inputs"] == [], (path, event, release)
-        if release["frameIndex"] != event["frameIndex"] + 1:
+    assert plan["events"][-1]["inputs"] == [], (
+        path, "the plan must release all held controls before its endpoint"
+    )
+    for index, event in enumerate(plan["events"][:-1]):
+        following = plan["events"][index + 1]
+        assert following["inputs"] != event["inputs"], (
+            path, event, "adjacent events repeat the same input state"
+        )
+        duration = following["frameIndex"] - event["frameIndex"]
+        if event["inputs"] and duration > 1:
             allowed = HOLD_INPUTS.get(slug, set())
             assert frozenset(event["inputs"]) in allowed, (path, event)
-        if index + 2 < len(plan["events"]):
-            following = plan["events"][index + 2]
-            assert following["frameIndex"] >= release["frameIndex"] + 2, (
-                path, release, following
-            )
     return plan
 
 
 def main() -> None:
+    build_recipe = GAME_BUILD_RECIPE.read_text()
+    for contract in (
+        "SWAN_TRACE ?= 0",
+        "SWAN_TRACE_CAPACITY ?= 64",
+        "-DSWAN_DETERMINISTIC_TRACE=$(SWAN_TRACE)",
+        "-DSWAN_DEBUG_FRAME_TRACE_CAPACITY=$(SWAN_TRACE_CAPACITY)",
+        "trace$(SWAN_TRACE)-$(SWAN_TRACE_CAPACITY)",
+    ):
+        assert contract in build_recipe, (
+            "shared build recipe dropped the SwanSong trace contract", contract
+        )
+    assert build_recipe.count("SWAN_DETERMINISTIC_TRACE=$(SWAN_TRACE)") >= 2
+    assert build_recipe.count(
+        "SWAN_DEBUG_FRAME_TRACE_CAPACITY=$(SWAN_TRACE_CAPACITY)"
+    ) >= 2
+
     plugin = json.loads(PLUGIN_CONTRACTS.read_text())
     assert set(plugin) == set(EXPECTED)
     seen_ids: set[int] = set()

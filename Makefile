@@ -10,7 +10,7 @@ GAMES := \
 	one-last-lap \
 	bug-witch
 
-.PHONY: all art clean dist verify native-test test smoke playtester-check $(GAMES)
+.PHONY: all art clean dist verify native-test test quality quality-strict smoke playtester-check $(GAMES)
 
 all: $(GAMES)
 
@@ -37,6 +37,13 @@ test: verify native-test
 	python3 tools/test_gameplay_paths.py
 	python3 tools/test_native_art.py
 	python3 tools/test_sdk_manifests.py
+
+quality:
+	python3 tools/test_game_quality.py --mode report
+
+quality-strict:
+	@test -n "$(GAME)" || { echo "GAME=<game-slug> is required" >&2; exit 2; }
+	python3 tools/test_game_quality.py --mode strict --game "$(GAME)"
 
 smoke: test
 	tools/smoke_swansong.sh dist/*.wsc
