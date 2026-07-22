@@ -1,0 +1,30 @@
+{
+  "schema": "swan-song-frame-input-plan-v1",
+  "totalFrames": 700,
+  "events": [
+    {
+      "frameIndex": 0,
+      "inputs": []
+    },
+    {
+      "frameIndex": 200,
+      "inputs": [
+        "x2"
+      ]
+    },
+    {
+      "frameIndex": 204,
+      "inputs": []
+    },
+    {
+      "frameIndex": 360,
+      "inputs": [
+        "y1"
+      ]
+    },
+    {
+      "frameIndex": 364,
+      "inputs": []
+    }
+  ]
+}

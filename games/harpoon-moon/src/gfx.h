@@ -1,11 +1,16 @@
 #ifndef SWANSONG_HARPOON_GFX_H
 #define SWANSONG_HARPOON_GFX_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
-void gfx_show_intro(void);
-void gfx_init(void);
-void gfx_render(uint8_t skiff, uint8_t creature, uint16_t oxygen,
-	uint8_t tags, uint8_t boss_hp, uint8_t charge, uint8_t result);
+#include "model.h"
+
+void harpoon_gfx_reset_title(void);
+void harpoon_gfx_show_title(bool show_prompt, bool attract, uint8_t page,
+	bool training, uint16_t best_score, uint8_t best_rank);
+void harpoon_gfx_init(void);
+void harpoon_gfx_render(const harpoon_state_t *state,
+	uint16_t best_score, uint8_t best_rank);
 
 #endif

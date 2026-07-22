@@ -2,11 +2,14 @@
 #define SWANSONG_RADIO_GFX_H
 
 #include <stdbool.h>
-#include <stdint.h>
 
-void gfx_show_intro(void);
+#include "model.h"
+
+void gfx_reset_title(void);
+void gfx_set_records(uint16_t best_score, uint16_t best_time,
+	uint8_t signals_discovered, bool tutorial_complete);
+void gfx_show_title(const radio_state_t *state, bool show_prompt);
 void gfx_init(void);
-void gfx_render(uint16_t frequency, uint8_t gain, uint16_t time,
-	uint8_t clue, uint8_t result, bool gate);
+void gfx_render(const radio_state_t *state);
 
 #endif

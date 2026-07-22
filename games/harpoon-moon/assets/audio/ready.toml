@@ -1,0 +1,14 @@
+type = "sfx"
+priority = 6
+
+[[steps]]
+command = [43, 0, 8]
+duration_frames = 3
+
+[[steps]]
+command = [50, 0, 10]
+duration_frames = 6
+
+[[steps]]
+command = [255, 254, 0]
+duration_frames = 1

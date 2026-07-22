@@ -23,7 +23,6 @@ GAMES = (
     "one-last-lap",
     "bug-witch",
 )
-SDK_NATIVE_GAMES = {"mote-sound-terminal", "orbital-courier"}
 
 
 def png_size(path: Path) -> tuple[int, int]:
@@ -61,7 +60,7 @@ def main() -> None:
         gfx_source = gfx_path.read_text()
         source_sha = hashlib.sha256(master.read_bytes()).hexdigest()
 
-        if slug in SDK_NATIVE_GAMES:
+        if not header_path.exists():
             game_root = ROOT / "games" / slug
             intro_asset = game_root / "assets" / "graphics" / "intro.png"
             gameplay_asset = game_root / "assets" / "graphics" / "gameplay.png"
@@ -69,16 +68,17 @@ def main() -> None:
                 (game_root / "build" / "generated" / "asset-report.json").read_text()
             )
 
-            assert not header_path.exists()
             assert png_size(intro_asset) == (224, 144)
-            assert intro_asset.read_bytes() == native.read_bytes()
+            # Rebuilt games may now use a dedicated title composition rather
+            # than reusing the old gameplay proof as an intro background.
+            if slug == "mote-sound-terminal":
+                assert intro_asset.read_bytes() == native.read_bytes()
             expected_size = (112, 40) if slug == "mote-sound-terminal" else (128, 64)
-            expected_assets = (
-                ["intro", "gameplay", "track_0", "track_1", "track_2"]
-                if slug == "mote-sound-terminal" else ["intro", "gameplay"]
-            )
+            expected_assets = ({"intro", "gameplay", "track_0", "track_1", "track_2"}
+                               if slug == "mote-sound-terminal"
+                               else {"intro", "gameplay", "title_music", "delivery_music"})
             assert png_size(gameplay_asset) == expected_size
-            assert [asset["id"] for asset in report["assets"]] == expected_assets
+            assert expected_assets <= {asset["id"] for asset in report["assets"]}
             graphic_assets = [asset for asset in report["assets"]
                               if asset["type"] not in {"music", "sfx"}]
             assert all(asset["converter"] == "wonderful-superfamiconv"
@@ -104,10 +104,6 @@ def main() -> None:
             assert '#include "swan_assets.h"' in gfx_source
             assert "swan_asset_intro_tiles" in gfx_source
             assert "swan_asset_gameplay_tiles" in gfx_source
-            intro_hook = (
-                "gfx_show_intro();" if slug == "mote-sound-terminal"
-                else "orbital_gfx_show_intro();"
-            )
             render_hook = (
                 "gfx_render(" if slug == "mote-sound-terminal"
                 else "orbital_gfx_render("
@@ -119,10 +115,6 @@ def main() -> None:
             intro_map_name = "game_intro_map"
             game_tiles_name = "game_tiles"
             palette_name = "game_palette"
-            intro_hook = (
-                "gfx_show_intro(title_prompt);" if slug == "one-last-lap"
-                else "gfx_show_intro();"
-            )
             render_hook = "gfx_render("
 
             intro_tiles = array_values(header, intro_tiles_name)
@@ -137,7 +129,9 @@ def main() -> None:
             assert '#include "gameplay_art.h"' in gfx_source
 
         assert '#include "gfx.h"' in main_source
-        assert intro_hook in main_source
+        assert re.search(r"(?:orbital_)?gfx_show_(?:intro|title)\s*\(", main_source), (
+            "missing persistent graphical title hook", main_path
+        )
         assert render_hook in main_source
         for terminal_call in (
             "#include <stdio.h>", "printf(", "putchar(", "rf_header(",

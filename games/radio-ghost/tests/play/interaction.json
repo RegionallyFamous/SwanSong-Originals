@@ -1,1 +1,130 @@
-{"schema":"swan-song-frame-input-plan-v1","totalFrames":364,"events":[{"frameIndex":0,"inputs":[]},{"frameIndex":120,"inputs":["x2"]},{"frameIndex":121,"inputs":[]},{"frameIndex":192,"inputs":["x3"]},{"frameIndex":193,"inputs":[]},{"frameIndex":264,"inputs":["b"]},{"frameIndex":265,"inputs":[]},{"frameIndex":336,"inputs":["a"]},{"frameIndex":337,"inputs":[]}]}
+{
+  "schema": "swan-song-frame-input-plan-v1",
+  "totalFrames": 800,
+  "events": [
+    {
+      "frameIndex": 0,
+      "inputs": []
+    },
+    {
+      "frameIndex": 120,
+      "inputs": [
+        "a"
+      ]
+    },
+    {
+      "frameIndex": 130,
+      "inputs": []
+    },
+    {
+      "frameIndex": 180,
+      "inputs": [
+        "x2"
+      ]
+    },
+    {
+      "frameIndex": 190,
+      "inputs": []
+    },
+    {
+      "frameIndex": 220,
+      "inputs": [
+        "x3"
+      ]
+    },
+    {
+      "frameIndex": 230,
+      "inputs": []
+    },
+    {
+      "frameIndex": 260,
+      "inputs": [
+        "b"
+      ]
+    },
+    {
+      "frameIndex": 270,
+      "inputs": []
+    },
+    {
+      "frameIndex": 300,
+      "inputs": [
+        "a"
+      ]
+    },
+    {
+      "frameIndex": 310,
+      "inputs": []
+    },
+    {
+      "frameIndex": 350,
+      "inputs": [
+        "a"
+      ]
+    },
+    {
+      "frameIndex": 360,
+      "inputs": []
+    },
+    {
+      "frameIndex": 420,
+      "inputs": [
+        "x4"
+      ]
+    },
+    {
+      "frameIndex": 430,
+      "inputs": []
+    },
+    {
+      "frameIndex": 450,
+      "inputs": [
+        "x3"
+      ]
+    },
+    {
+      "frameIndex": 460,
+      "inputs": []
+    },
+    {
+      "frameIndex": 480,
+      "inputs": [
+        "b"
+      ]
+    },
+    {
+      "frameIndex": 490,
+      "inputs": []
+    },
+    {
+      "frameIndex": 510,
+      "inputs": [
+        "a"
+      ]
+    },
+    {
+      "frameIndex": 520,
+      "inputs": []
+    },
+    {
+      "frameIndex": 550,
+      "inputs": [
+        "start"
+      ]
+    },
+    {
+      "frameIndex": 560,
+      "inputs": []
+    },
+    {
+      "frameIndex": 650,
+      "inputs": [
+        "start"
+      ]
+    },
+    {
+      "frameIndex": 660,
+      "inputs": []
+    }
+  ]
+}

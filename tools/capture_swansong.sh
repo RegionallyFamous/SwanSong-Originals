@@ -32,13 +32,6 @@ TEMP_ROOT=$(mktemp -d "${TMPDIR:-/tmp}/swansong-originals-capture.XXXXXX")
 trap 'rm -rf "$TEMP_ROOT"' EXIT INT TERM
 mkdir -p "$OUTPUT_DIR"
 
-printf '%s\n' \
-    '{' \
-    '  "schema": "swan-song-frame-input-plan-v1",' \
-    '  "totalFrames": 120,' \
-    '  "events": [{"frameIndex": 0, "inputs": []}]' \
-    '}' >"$TEMP_ROOT/boot-plan.json"
-
 "$SWANSONG_ROOT/Scripts/build-engine.sh" >/dev/null
 SWAN_ARES_ENGINE_DIR="$ENGINE_DIR" \
     "$SWANSONG_ROOT/Scripts/swift-package.sh" build \
@@ -49,13 +42,30 @@ RUNNER="$SWIFT_DIR/debug/SwanSongRouteRunner"
 
 for rom in "$@"; do
     name=$(basename "${rom%.*}")
+    case "$name" in
+        bug_witch|harpoon_moon|one_last_lap|orbital_courier|radio_ghost)
+            capture_frames=90
+            ;;
+        *)
+            capture_frames=40
+            ;;
+    esac
+    plan="$TEMP_ROOT/$name-boot-plan.json"
+    capture="$TEMP_ROOT/$name.png"
+    printf '%s\n' \
+        '{' \
+        '  "schema": "swan-song-frame-input-plan-v1",' \
+        "  \"totalFrames\": $capture_frames," \
+        '  "events": [{"frameIndex": 0, "inputs": []}]' \
+        '}' >"$plan"
     SWAN_ARES_ENGINE_DIR="$ENGINE_DIR" "$RUNNER" playtest-plan \
         --enable-debug-tools \
         --rom "$rom" \
-        --plan "$TEMP_ROOT/boot-plan.json" \
+        --plan "$plan" \
         --output "$TEMP_ROOT/$name.json" \
-        --capture "$OUTPUT_DIR/$name.png"
-    test -s "$OUTPUT_DIR/$name.png"
+        --capture "$capture"
+    test -s "$capture"
+    mv "$capture" "$OUTPUT_DIR/$name.png"
     printf 'CAP  %s\n' "$OUTPUT_DIR/$name.png"
 done
 
@@ -68,7 +78,7 @@ if command -v magick >/dev/null 2>&1; then
         if [ -z "$first" ]; then
             first=$file
         else
-            magick "$first" "$file" +append "$row_dir/$row.png"
+            magick "$first" "$file" +append -strip "$row_dir/$row.png"
             row=$((row + 1))
             first=""
         fi
@@ -76,6 +86,6 @@ if command -v magick >/dev/null 2>&1; then
     if [ -n "$first" ]; then
         cp "$first" "$row_dir/$row.png"
     fi
-    magick "$row_dir"/*.png -append "$OUTPUT_DIR/contact-sheet.png"
+    magick "$row_dir"/*.png -append -strip "$OUTPUT_DIR/contact-sheet.png"
     printf 'SHEET %s\n' "$OUTPUT_DIR/contact-sheet.png"
 fi

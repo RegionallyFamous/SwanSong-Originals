@@ -1,0 +1,6 @@
+{
+  "schema": "swan-scenario-outcome-contract-v1",
+  "final": {"scene": 2, "ending": 0, "progressAtLeast": 100, "progressAtMost": 150},
+  "reset": {"expectation": "required", "scene": 2, "ending": 0},
+  "audio": {"expectation": "audible", "markerMask": 272}
+}

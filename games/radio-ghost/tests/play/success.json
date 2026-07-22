@@ -1,1 +1,310 @@
-{"schema":"swan-song-frame-input-plan-v1","totalFrames":2380,"events":[{"frameIndex":0,"inputs":[]},{"frameIndex":120,"inputs":["b"]},{"frameIndex":121,"inputs":[]},{"frameIndex":192,"inputs":["x2"]},{"frameIndex":193,"inputs":[]},{"frameIndex":264,"inputs":["x2"]},{"frameIndex":265,"inputs":[]},{"frameIndex":336,"inputs":["x2"]},{"frameIndex":337,"inputs":[]},{"frameIndex":408,"inputs":["x2"]},{"frameIndex":409,"inputs":[]},{"frameIndex":480,"inputs":["x2"]},{"frameIndex":481,"inputs":[]},{"frameIndex":552,"inputs":["x2"]},{"frameIndex":553,"inputs":[]},{"frameIndex":624,"inputs":["x2"]},{"frameIndex":625,"inputs":[]},{"frameIndex":696,"inputs":["x2"]},{"frameIndex":697,"inputs":[]},{"frameIndex":768,"inputs":["a"]},{"frameIndex":769,"inputs":[]},{"frameIndex":840,"inputs":["x3"]},{"frameIndex":841,"inputs":[]},{"frameIndex":912,"inputs":["x2"]},{"frameIndex":913,"inputs":[]},{"frameIndex":984,"inputs":["x2"]},{"frameIndex":985,"inputs":[]},{"frameIndex":1056,"inputs":["x2"]},{"frameIndex":1057,"inputs":[]},{"frameIndex":1128,"inputs":["x2"]},{"frameIndex":1129,"inputs":[]},{"frameIndex":1200,"inputs":["x2"]},{"frameIndex":1201,"inputs":[]},{"frameIndex":1272,"inputs":["x2"]},{"frameIndex":1273,"inputs":[]},{"frameIndex":1344,"inputs":["x2"]},{"frameIndex":1345,"inputs":[]},{"frameIndex":1416,"inputs":["x2"]},{"frameIndex":1417,"inputs":[]},{"frameIndex":1488,"inputs":["x2"]},{"frameIndex":1489,"inputs":[]},{"frameIndex":1560,"inputs":["x2"]},{"frameIndex":1561,"inputs":[]},{"frameIndex":1632,"inputs":["a"]},{"frameIndex":1633,"inputs":[]},{"frameIndex":1704,"inputs":["x3"]},{"frameIndex":1705,"inputs":[]},{"frameIndex":1776,"inputs":["x2"]},{"frameIndex":1777,"inputs":[]},{"frameIndex":1848,"inputs":["x2"]},{"frameIndex":1849,"inputs":[]},{"frameIndex":1920,"inputs":["x2"]},{"frameIndex":1921,"inputs":[]},{"frameIndex":1992,"inputs":["x2"]},{"frameIndex":1993,"inputs":[]},{"frameIndex":2064,"inputs":["x2"]},{"frameIndex":2065,"inputs":[]},{"frameIndex":2136,"inputs":["x2"]},{"frameIndex":2137,"inputs":[]},{"frameIndex":2208,"inputs":["x2"]},{"frameIndex":2209,"inputs":[]},{"frameIndex":2280,"inputs":["x2"]},{"frameIndex":2281,"inputs":[]},{"frameIndex":2352,"inputs":["a"]},{"frameIndex":2353,"inputs":[]}]}
+{
+  "schema": "swan-song-frame-input-plan-v1",
+  "totalFrames": 4730,
+  "events": [
+    {
+      "frameIndex": 0,
+      "inputs": []
+    },
+    {
+      "frameIndex": 120,
+      "inputs": [
+        "x2"
+      ]
+    },
+    {
+      "frameIndex": 130,
+      "inputs": []
+    },
+    {
+      "frameIndex": 300,
+      "inputs": [
+        "a"
+      ]
+    },
+    {
+      "frameIndex": 310,
+      "inputs": []
+    },
+    {
+      "frameIndex": 900,
+      "inputs": [
+        "x4"
+      ]
+    },
+    {
+      "frameIndex": 910,
+      "inputs": []
+    },
+    {
+      "frameIndex": 1200,
+      "inputs": [
+        "x4"
+      ]
+    },
+    {
+      "frameIndex": 1210,
+      "inputs": []
+    },
+    {
+      "frameIndex": 1500,
+      "inputs": [
+        "x4"
+      ]
+    },
+    {
+      "frameIndex": 1510,
+      "inputs": []
+    },
+    {
+      "frameIndex": 1600,
+      "inputs": [
+        "a"
+      ]
+    },
+    {
+      "frameIndex": 1610,
+      "inputs": []
+    },
+    {
+      "frameIndex": 2000,
+      "inputs": [
+        "x3"
+      ]
+    },
+    {
+      "frameIndex": 2010,
+      "inputs": []
+    },
+    {
+      "frameIndex": 2100,
+      "inputs": [
+        "x3"
+      ]
+    },
+    {
+      "frameIndex": 2110,
+      "inputs": []
+    },
+    {
+      "frameIndex": 2300,
+      "inputs": [
+        "x2"
+      ]
+    },
+    {
+      "frameIndex": 2310,
+      "inputs": []
+    },
+    {
+      "frameIndex": 2400,
+      "inputs": [
+        "x2"
+      ]
+    },
+    {
+      "frameIndex": 2410,
+      "inputs": []
+    },
+    {
+      "frameIndex": 2500,
+      "inputs": [
+        "x2"
+      ]
+    },
+    {
+      "frameIndex": 2510,
+      "inputs": []
+    },
+    {
+      "frameIndex": 2600,
+      "inputs": [
+        "x2"
+      ]
+    },
+    {
+      "frameIndex": 2610,
+      "inputs": []
+    },
+    {
+      "frameIndex": 2700,
+      "inputs": [
+        "x2"
+      ]
+    },
+    {
+      "frameIndex": 2710,
+      "inputs": []
+    },
+    {
+      "frameIndex": 2800,
+      "inputs": [
+        "x2"
+      ]
+    },
+    {
+      "frameIndex": 2810,
+      "inputs": []
+    },
+    {
+      "frameIndex": 2900,
+      "inputs": [
+        "x2"
+      ]
+    },
+    {
+      "frameIndex": 2910,
+      "inputs": []
+    },
+    {
+      "frameIndex": 3000,
+      "inputs": [
+        "x2"
+      ]
+    },
+    {
+      "frameIndex": 3010,
+      "inputs": []
+    },
+    {
+      "frameIndex": 3100,
+      "inputs": [
+        "x2"
+      ]
+    },
+    {
+      "frameIndex": 3110,
+      "inputs": []
+    },
+    {
+      "frameIndex": 3200,
+      "inputs": [
+        "x2"
+      ]
+    },
+    {
+      "frameIndex": 3210,
+      "inputs": []
+    },
+    {
+      "frameIndex": 3300,
+      "inputs": [
+        "x2"
+      ]
+    },
+    {
+      "frameIndex": 3310,
+      "inputs": []
+    },
+    {
+      "frameIndex": 3400,
+      "inputs": [
+        "x2"
+      ]
+    },
+    {
+      "frameIndex": 3410,
+      "inputs": []
+    },
+    {
+      "frameIndex": 3500,
+      "inputs": [
+        "a"
+      ]
+    },
+    {
+      "frameIndex": 3510,
+      "inputs": []
+    },
+    {
+      "frameIndex": 3800,
+      "inputs": [
+        "x3"
+      ]
+    },
+    {
+      "frameIndex": 3810,
+      "inputs": []
+    },
+    {
+      "frameIndex": 4000,
+      "inputs": [
+        "x4"
+      ]
+    },
+    {
+      "frameIndex": 4010,
+      "inputs": []
+    },
+    {
+      "frameIndex": 4100,
+      "inputs": [
+        "x4"
+      ]
+    },
+    {
+      "frameIndex": 4110,
+      "inputs": []
+    },
+    {
+      "frameIndex": 4200,
+      "inputs": [
+        "x4"
+      ]
+    },
+    {
+      "frameIndex": 4210,
+      "inputs": []
+    },
+    {
+      "frameIndex": 4300,
+      "inputs": [
+        "x4"
+      ]
+    },
+    {
+      "frameIndex": 4310,
+      "inputs": []
+    },
+    {
+      "frameIndex": 4400,
+      "inputs": [
+        "x4"
+      ]
+    },
+    {
+      "frameIndex": 4410,
+      "inputs": []
+    },
+    {
+      "frameIndex": 4500,
+      "inputs": [
+        "x4"
+      ]
+    },
+    {
+      "frameIndex": 4510,
+      "inputs": []
+    },
+    {
+      "frameIndex": 4600,
+      "inputs": [
+        "x4"
+      ]
+    },
+    {
+      "frameIndex": 4610,
+      "inputs": []
+    },
+    {
+      "frameIndex": 4700,
+      "inputs": [
+        "a"
+      ]
+    },
+    {
+      "frameIndex": 4710,
+      "inputs": []
+    }
+  ]
+}

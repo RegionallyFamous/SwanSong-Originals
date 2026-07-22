@@ -8,9 +8,22 @@ from itertools import product
 from pathlib import Path
 import json
 import re
+import tomllib
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+SAVE_TYPES = {
+    "none": "NONE",
+    "eeprom-128b": "EEPROM_128B",
+    "eeprom-1kb": "EEPROM_1KB",
+    "eeprom-2kb": "EEPROM_2KB",
+    "sram-8kb": "SRAM_8KB",
+    "sram-32kb": "SRAM_32KB",
+    "sram-128kb": "SRAM_128KB",
+    "sram-256kb": "SRAM_256KB",
+    "sram-512kb": "SRAM_512KB",
+}
 
 
 def reachable(start, goal, blocked, width, height):
@@ -39,11 +52,21 @@ def test_cartridge_headers():
     assert len(configs) == 10
     for config_path in configs:
         text = config_path.read_text()
+        with (config_path.parent / "swan.toml").open("rb") as handle:
+            manifest = tomllib.load(handle)["cartridge"]
         game_id_match = re.search(r"^game_id = (\d+)$", text, re.MULTILINE)
         assert game_id_match, f"missing game_id in {config_path}"
         game_id = int(game_id_match.group(1))
         assert re.search(r"^color = true$", text, re.MULTILINE)
-        assert re.search(r'^save_type = "NONE"$', text, re.MULTILINE)
+        assert re.search(
+            rf'^save_type = "{SAVE_TYPES[str(manifest["save_type"])]}"$',
+            text,
+            re.MULTILINE,
+        )
+        assert re.search(
+            rf'^game_version = {int(manifest["version"])}$', text, re.MULTILINE
+        )
+        assert game_id == int(manifest["game_id"])
         assert game_id not in ids
         ids.add(game_id)
     assert ids == set(range(1, 11))
@@ -72,13 +95,16 @@ def test_deterministic_sessions_and_documented_directions():
             f"{slug} must drain input and reset deterministic session time"
         )
         assert "frame->input" in text, f"{slug} bypasses immutable SDK input"
-    for slug in ("harpoon-moon", "pocket-kaiju-observatory"):
-        assert "swan_game_primary_axis(frame->input->pressed)" in sources[slug], (
-            f"{slug} does not honor all four documented directions"
-        )
+    assert "SWAN_ACTION_LEFT" in sources["harpoon-moon"]
+    assert "SWAN_ACTION_RIGHT" in sources["harpoon-moon"]
+    assert "swan_game_primary_axis(frame->input->pressed)" in sources[
+        "pocket-kaiju-observatory"
+    ]
     assert "SWAN_ACTION_LEFT" in sources["one-last-lap"]
     assert "SWAN_ACTION_RIGHT" in sources["one-last-lap"]
-    for slug in ("orbital-courier", "turncoat-tactics", "rotate-dungeon"):
+    for action in ("UP", "RIGHT", "DOWN", "LEFT"):
+        assert f"SWAN_ACTION_{action}" in sources["orbital-courier"]
+    for slug in ("turncoat-tactics", "rotate-dungeon"):
         assert "swan_input_dx(frame->input->pressed)" in sources[slug]
         assert "swan_input_dy(frame->input->pressed)" in sources[slug]
     lap = (ROOT / "games/one-last-lap/src/model.c").read_text()
@@ -103,7 +129,9 @@ def test_sdk_runtime_ownership():
     assert "all: engine" not in root_make
     for renderer in sorted((ROOT / "games").glob("*/src/gfx.c")):
         text = renderer.read_text()
-        if renderer.parent.parent.name in {"mote-sound-terminal", "orbital-courier"}:
+        if renderer.parent.parent.name in {
+            "harpoon-moon", "mote-sound-terminal", "orbital-courier"
+        }:
             assert "#include <swan/legacy.h>" not in text, renderer
             assert '#include "swan_assets.h"' in text, renderer
             assert "swan_gfx_load_tiles(" in text, renderer

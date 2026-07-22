@@ -1,0 +1,27 @@
+{
+  "schema": "swan-song-frame-input-plan-v1",
+  "totalFrames": 3000,
+  "events": [
+    {"frameIndex": 0, "inputs": []},
+    {"frameIndex": 120, "inputs": ["a"]},
+    {"frameIndex": 121, "inputs": []},
+    {"frameIndex": 160, "inputs": ["x2"]},
+    {"frameIndex": 161, "inputs": []},
+    {"frameIndex": 190, "inputs": ["x1"]},
+    {"frameIndex": 191, "inputs": []},
+    {"frameIndex": 220, "inputs": ["a"]},
+    {"frameIndex": 221, "inputs": []},
+    {"frameIndex": 250, "inputs": ["b"]},
+    {"frameIndex": 251, "inputs": []},
+    {"frameIndex": 280, "inputs": ["a", "b"]},
+    {"frameIndex": 281, "inputs": []},
+    {"frameIndex": 310, "inputs": ["a"]},
+    {"frameIndex": 311, "inputs": []},
+    {"frameIndex": 340, "inputs": ["start"]},
+    {"frameIndex": 341, "inputs": []},
+    {"frameIndex": 500, "inputs": ["a"]},
+    {"frameIndex": 501, "inputs": []},
+    {"frameIndex": 530, "inputs": ["start"]},
+    {"frameIndex": 531, "inputs": []}
+  ]
+}

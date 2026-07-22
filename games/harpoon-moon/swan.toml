@@ -2,12 +2,12 @@ schema_version = 1
 
 [sdk]
 version = "0.5.0"
-revision = "sha256:131099c3601a31146bf09121ec6bf98a8059ddf58fd0c7935029d0a0c620969b"
+revision = "sha256:47c8f48d2e2c7f3d4ed8b6e2adea963007d8ce325b90f410d7509d77c25f3001"
 
 [game]
 id = "harpoon-moon"
 title = "Harpoon Moon"
-version = "1.0.0"
+version = "1.1.0"
 template = "arcade-action"
 hardware = "color-required"
 orientation = "horizontal"
@@ -16,82 +16,273 @@ initial_scene = "intro"
 [cartridge]
 publisher_id = 0
 game_id = 5
-version = 1
-save_type = "none"
-save_bytes = 0
+version = 2
+save_type = "eeprom-1kb"
+save_bytes = 256
 rtc = false
 
 [controls.actions]
 left = ["X4", "Y1"]
 right = ["X2", "Y3"]
 charge_fire = ["A"]
+replay = ["A"]
 lure = ["B"]
+retry = ["B"]
+start_or_pause = ["START"]
 
 [budgets]
 rom_bytes = 262144
 work_ram_bytes = 16384
-vram_tiles = 512
+vram_tiles = 448
 palettes = 16
-sprites = 128
-sprites_per_scanline = 32
-audio_bytes = 8192
+sprites = 40
+sprites_per_scanline = 12
+audio_bytes = 24576
 
 [resources]
 work_ram_bytes = 8192
-sprites = 0
-sprites_per_scanline = 0
+sprites = 36
+sprites_per_scanline = 10
+
+[quality]
+standard_version = 1
+attract_after_frames = 755
+menu_uses_both_clusters = true
+records = ["best_score", "best_rank", "tutorial_complete"]
+
+[quality.scenes]
+title = "intro"
+gameplay = "hunt"
+tutorial = "hunt"
+pause = "hunt"
+result = "result"
 
 [[scenes]]
 id = "intro"
+assets = ["title_art", "title_music"]
+
 [[scenes]]
 id = "hunt"
+assets = ["hunt_music", "boss_music"]
+
 [[scenes]]
 id = "result"
+assets = ["result_music"]
+
+[[assets]]
+id = "title_art"
+type = "fullscreen"
+source = "assets/graphics/title.png"
+group = "intro"
+flip_dedupe = true
+
+[[assets]]
+id = "title_music"
+type = "music"
+source = "assets/audio/title.toml"
+group = "intro"
+
+[[assets]]
+id = "hunt_music"
+type = "music"
+source = "assets/audio/hunt.toml"
+group = "hunt"
+
+[[assets]]
+id = "boss_music"
+type = "music"
+source = "assets/audio/leviathan.toml"
+group = "hunt"
+
+[[assets]]
+id = "result_music"
+type = "music"
+source = "assets/audio/result.toml"
+group = "result"
+
+[[assets]]
+id = "move_sfx"
+type = "sfx"
+source = "assets/audio/move.toml"
+group = "common"
+
+[[assets]]
+id = "lure_sfx"
+type = "sfx"
+source = "assets/audio/lure.toml"
+group = "common"
+
+[[assets]]
+id = "charge_sfx"
+type = "sfx"
+source = "assets/audio/charge.toml"
+group = "common"
+
+[[assets]]
+id = "ready_sfx"
+type = "sfx"
+source = "assets/audio/ready.toml"
+group = "common"
+
+[[assets]]
+id = "shot_sfx"
+type = "sfx"
+source = "assets/audio/shot.toml"
+group = "common"
+
+[[assets]]
+id = "hit_sfx"
+type = "sfx"
+source = "assets/audio/hit.toml"
+group = "common"
+
+[[assets]]
+id = "tag_sfx"
+type = "sfx"
+source = "assets/audio/tag.toml"
+group = "common"
+
+[[assets]]
+id = "boss_sfx"
+type = "sfx"
+source = "assets/audio/boss.toml"
+group = "common"
+
+[[assets]]
+id = "miss_sfx"
+type = "sfx"
+source = "assets/audio/miss.toml"
+group = "common"
+
+[[assets]]
+id = "recover_sfx"
+type = "sfx"
+source = "assets/audio/recover.toml"
+group = "common"
+
+[[assets]]
+id = "pause_sfx"
+type = "sfx"
+source = "assets/audio/pause.toml"
+group = "common"
+
+[[assets]]
+id = "retry_sfx"
+type = "sfx"
+source = "assets/audio/retry.toml"
+group = "common"
+
+[[assets]]
+id = "win_sfx"
+type = "sfx"
+source = "assets/audio/win.toml"
+group = "common"
+
+[[assets]]
+id = "failure_sfx"
+type = "sfx"
+source = "assets/audio/failure.toml"
+group = "common"
 
 [play]
 ready_frames = 120
 
 [[play.scenarios]]
 id = "neutral"
-title = "Neutral boot"
-goal = "Reach the stable moon hunt from a fresh boot."
+title = "Persistent moon title"
+goal = "Hold on the title until the player explicitly starts."
 plan = "tests/play/neutral.json"
-required_checks = ["hunter and targets are visible", "oxygen is visible", "no crash or hang"]
+required_checks = ["project-owned lunar artwork and code-rendered title remain stable", "PRESS START blinks", "title music plays", "hunt does not auto-start"]
+audio = true
+
+[[play.scenarios]]
+id = "attract"
+title = "Attract briefing"
+goal = "Idle into the lure briefing, then return with input."
+plan = "tests/play/attract.json"
+required_checks = ["idle title changes to an attract briefing", "lure, gold charge, and reel ideas are demonstrated", "input returns to the title"]
+audio = true
+
+[[play.scenarios]]
+id = "menu-input"
+title = "Dual-cluster title navigation"
+goal = "Navigate the title briefing with both directional clusters."
+plan = "tests/play/menu-input.json"
+required_checks = ["X cluster changes the title briefing page", "Y cluster changes it back", "selection feedback is visible and audible"]
+audio = true
+
+[[play.scenarios]]
+id = "tutorial"
+title = "Playable first hunt"
+goal = "Learn movement, lure exposure, and the gold charge window through play."
+plan = "tests/play/tutorial.json"
+required_checks = ["movement advances the first lesson", "B pulls the creature into an exposed window", "the charge bar marks a gold release window", "a valid shot earns the first tag"]
+audio = true
 
 [[play.scenarios]]
 id = "interaction"
-title = "Hunt controls"
-goal = "Move, charge and release a shot, then exercise the lure."
+title = "Miss and reel recovery"
+goal = "Make a bad release, recover its pressure, then open another lure window."
 plan = "tests/play/interaction.json"
-required_checks = ["movement works", "charge is visible", "release fires", "lure changes target behavior"]
+required_checks = ["bad charge timing is a readable miss", "oxygen pressure changes", "holding B reels the line faster and restores most of the miss cost", "the hunt remains recoverable"]
+audio = true
+
+[[play.scenarios]]
+id = "pause"
+title = "Pause, resume, and restart"
+goal = "Pause during a hunt, prove the state is frozen, resume, then restart."
+plan = "tests/play/pause.json"
+required_checks = ["START opens a distinct pause panel", "oxygen and creatures freeze while paused", "START resumes", "B restarts the playable tutorial"]
 audio = true
 
 [[play.scenarios]]
 id = "success"
-title = "Hunt victory"
-goal = "Tag three moon creatures, then land three charged hits on the surfaced boss."
+title = "Leviathan victory"
+goal = "Tag three staged creatures and land one timed hit in each leviathan phase."
 plan = "tests/play/success.json"
-required_checks = ["three creature tags are filled", "the boss appears after the third tag", "three boss hits empty its health", "victory result appears"]
+outcome = "tests/outcomes/success.json"
+required_checks = ["calm, shy, and diving creatures demand readable adjustments", "the leviathan has track, sweep, and abyss phases", "oxygen pressure intensifies without making misses terminal", "result shows rank, time, score, oxygen, misses, and replay"]
 audio = true
 
 [[play.scenarios]]
 id = "failure"
 title = "Oxygen boundary"
-goal = "Wait until oxygen is exhausted."
+goal = "Enter the hunt, then exhaust oxygen pressure."
 plan = "tests/play/failure.json"
-required_checks = ["oxygen counts down", "oxygen failure result appears", "result remains stable"]
+outcome = "tests/outcomes/failure.json"
+required_checks = ["oxygen warning is visible before empty", "oxygen failure has a distinct stable result", "failure still offers replay and title"]
+audio = true
 
 [[play.scenarios]]
 id = "reset"
-title = "Hunt replay"
+title = "Failure and exact retry"
 goal = "Reach oxygen failure and replay the hunt."
 plan = "tests/play/reset.json"
-required_checks = ["oxygen failure is reached", "replay restores hunter and creature", "oxygen and tags reset"]
+outcome = "tests/outcomes/reset.json"
+required_checks = ["failure is reached", "A replay restores the first playable lesson", "oxygen, clocks, RNG, AI, score, music, sprites, and input reset"]
+audio = true
+
+[[play.scenarios]]
+id = "save-restart"
+title = "Record journal"
+goal = "Complete a hunt, store its rank, and return to the title record panel."
+plan = "tests/play/save-restart.json"
+required_checks = ["the completed score and rank are journaled", "START returns to a title that displays the record", "corrupt/interrupted slot recovery remains a Save/RTC Laboratory gate"]
+audio = true
+
+[[play.scenarios]]
+id = "audio"
+title = "Complete hunt mix"
+goal = "Capture a complete Black Tides loop while actions arbitrate effects on the eligible voice."
+plan = "tests/play/audio.json"
+required_checks = ["the full A/B/turnaround hunt form is present", "lure, charge, miss, reel, pause, and resume cues remain distinct", "effect arbitration restores held music state"]
+audio = true
 
 [[play.scenarios]]
 id = "deterministic"
-title = "Deterministic victory replay"
-goal = "Replay the complete six-hit victory path from a fresh boot."
+title = "Deterministic leviathan replay"
+goal = "Replay the complete victory route from a fresh boot."
 plan = "tests/play/deterministic.json"
-required_checks = ["tags, boss health, victory frame, and sound match the success path", "frame and WAV evidence match on repeated execution"]
+outcome = "tests/outcomes/deterministic.json"
+required_checks = ["tags, phases, score, oxygen, misses, ending, and state hash match the success path", "PNG and WAV evidence match on repeated execution"]
 audio = true

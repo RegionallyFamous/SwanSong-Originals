@@ -1,0 +1,100 @@
+{
+  "schema": "swan-song-frame-input-plan-v1",
+  "totalFrames": 4100,
+  "events": [
+    {
+      "frameIndex": 0,
+      "inputs": []
+    },
+    {
+      "frameIndex": 130,
+      "inputs": [
+        "start"
+      ]
+    },
+    {
+      "frameIndex": 134,
+      "inputs": []
+    },
+    {
+      "frameIndex": 220,
+      "inputs": [
+        "x2"
+      ]
+    },
+    {
+      "frameIndex": 224,
+      "inputs": []
+    },
+    {
+      "frameIndex": 300,
+      "inputs": [
+        "b"
+      ]
+    },
+    {
+      "frameIndex": 520,
+      "inputs": []
+    },
+    {
+      "frameIndex": 650,
+      "inputs": [
+        "a"
+      ]
+    },
+    {
+      "frameIndex": 658,
+      "inputs": []
+    },
+    {
+      "frameIndex": 760,
+      "inputs": [
+        "b"
+      ]
+    },
+    {
+      "frameIndex": 900,
+      "inputs": []
+    },
+    {
+      "frameIndex": 1100,
+      "inputs": [
+        "start"
+      ]
+    },
+    {
+      "frameIndex": 1104,
+      "inputs": []
+    },
+    {
+      "frameIndex": 1260,
+      "inputs": [
+        "start"
+      ]
+    },
+    {
+      "frameIndex": 1264,
+      "inputs": []
+    },
+    {
+      "frameIndex": 1500,
+      "inputs": [
+        "a"
+      ]
+    },
+    {
+      "frameIndex": 1510,
+      "inputs": []
+    },
+    {
+      "frameIndex": 1600,
+      "inputs": [
+        "b"
+      ]
+    },
+    {
+      "frameIndex": 1850,
+      "inputs": []
+    }
+  ]
+}

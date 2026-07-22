@@ -1,0 +1,16 @@
+{
+  "copied": true,
+  "destination": {
+    "bytes": 2501370,
+    "path": "assets/art/title-master.png",
+    "sha256": "93068b0213ca322b262ebaebd7bfa63e3b77c0e8dec2f38d65e4c5ea67f2adf3"
+  },
+  "gameplayEvidence": false,
+  "provenanceReport": "assets/art/title-master.provenance.json",
+  "schema": "swansong-asset-import-report-v1",
+  "source": {
+    "bytes": 2501370,
+    "path": "/Users/nick/Documents/SwanSong-Originals/docs/art/title-screens/bug-witch-title-master.png",
+    "sha256": "93068b0213ca322b262ebaebd7bfa63e3b77c0e8dec2f38d65e4c5ea67f2adf3"
+  }
+}

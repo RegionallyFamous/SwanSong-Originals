@@ -1,0 +1,45 @@
+{
+  "approval": "artist-approved",
+  "asset": "title_art",
+  "gameplayEvidence": false,
+  "operations": [
+    {
+      "filter": "Lanczos",
+      "height": 144,
+      "name": "resize",
+      "width": 224
+    },
+    {
+      "colors": [
+        "#F5F0E6",
+        "#1A1A1A",
+        "#FF6B9D",
+        "#A8D5E5"
+      ],
+      "dither": false,
+      "name": "exact-nearest-palette"
+    },
+    {
+      "name": "decorative-tile-cleanup",
+      "rationale": "Removed three isolated edge spark tiles that were visually negligible after 2BPP conversion, bringing peak declared use back to the 448-tile production ceiling."
+    }
+  ],
+  "output": {
+    "bytes": 3376,
+    "colors": 4,
+    "height": 144,
+    "path": "assets/art/title-native.png",
+    "sha256": "afe03b14aed8dfb84dc9820deace750f5d4a6b4cffbf58b2ebc7d92ee2a5628c",
+    "width": 224
+  },
+  "schema": "swansong-asset-conversion-report-v1",
+  "source": {
+    "path": "assets/art/title-master.png",
+    "preserved": true,
+    "sha256": "93068b0213ca322b262ebaebd7bfa63e3b77c0e8dec2f38d65e4c5ea67f2adf3"
+  },
+  "workingImage": {
+    "path": "assets/art/title-native-rgba.png",
+    "sha256": "f63b3cead45f4b26c5c182cc49b12ac0680c41fb089811d842fd84ab5fadaaa5"
+  }
+}
