@@ -26,6 +26,8 @@ EXPECTED_TOOLS = {
     "swansong_observed_play_start",
     "swansong_observed_play_resume",
     "swansong_observed_play_step",
+    "swansong_observed_play_sequence",
+    "swansong_observed_play_branch",
     "swansong_observed_play_finish",
     "swansong_observed_play_cancel",
     "swansong_translation_capture_plan",
@@ -39,6 +41,7 @@ PROJECT_WRITE_TOOLS = {
     "swansong_studio_action",
     "swansong_observed_play_start",
     "swansong_observed_play_resume",
+    "swansong_observed_play_branch",
     "swansong_observed_play_finish",
     "swansong_observed_play_cancel",
     "swansong_translation_capture_plan",
@@ -128,6 +131,11 @@ def main() -> None:
         assert observed_step["annotations"]["readOnlyHint"] is False
         assert set(observed_step["inputSchema"].get("required", [])) == {
             "sessionID", "inputs", "frames", "confirmShareCapture",
+        }
+        observed_sequence = tools["swansong_observed_play_sequence"]
+        assert observed_sequence["annotations"]["readOnlyHint"] is False
+        assert set(observed_sequence["inputSchema"].get("required", [])) == {
+            "sessionID", "segments", "confirmShareCapture",
         }
 
         denied = call(process, 3, {

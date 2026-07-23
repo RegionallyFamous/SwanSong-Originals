@@ -16,10 +16,15 @@ The currently exposed tool families are:
 The key quality rule is simple: a successful build or boot is not a gameplay
 pass. The agent must inspect the screen, choose an input from the visible state,
 observe the result, and exercise the game-specific checks in `scripts/games.json`.
-The skill also carries a concise clean-room pattern guide for dual-cluster
-gestures, audio-led play, suspend/resume, utility editors, procedural rooms, and
-the SDK learning loop. Historical descriptions inform coverage; their code,
-assets, names, and exact interfaces are never bundled or copied.
+The plugin includes one skill for functional black-box playtesting and a second
+for evidence-backed engagement reviews. The fun tester runs discovery,
+competence, and replay passes, then reports clarity, control feel, decisions,
+momentum, mastery, variety, and replay pull without presenting AI judgment as
+universal human taste. The skills also carry a concise clean-room pattern guide
+for dual-cluster gestures, audio-led play, suspend/resume, utility editors,
+procedural rooms, and the SDK learning loop. Historical descriptions inform
+coverage; their code, assets, names, and exact interfaces are never bundled or
+copied.
 
 Each game manifest supplies six fresh-boot plans: neutral, interaction,
 success/utility, failure/boundary, reset/replay, and deterministic replay.

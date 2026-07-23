@@ -65,6 +65,23 @@ import sys
 plugin = pathlib.Path(sys.argv[1])
 manifest = json.loads((plugin / ".codex-plugin" / "plugin.json").read_text())
 skill = (plugin / "skills" / "play-swansong-games" / "SKILL.md").read_text()
+fun_skill = (
+    plugin / "skills" / "playtest-swansong-fun" / "SKILL.md"
+).read_text()
+fun_rubric = (
+    plugin
+    / "skills"
+    / "playtest-swansong-fun"
+    / "references"
+    / "fun-rubric.md"
+).read_text()
+fun_agent = (
+    plugin
+    / "skills"
+    / "playtest-swansong-fun"
+    / "agents"
+    / "openai.yaml"
+).read_text()
 patterns = (
     plugin
     / "skills"
@@ -72,8 +89,25 @@ patterns = (
     / "references"
     / "wwgp-design-patterns.md"
 ).read_text()
-assert manifest["version"] == "0.3.1"
+assert manifest["version"] == "0.4.0"
 assert "references/wwgp-design-patterns.md" in skill
+assert "../play-swansong-games/SKILL.md" in fun_skill
+assert "Discovery pass" in fun_skill
+assert "Competence pass" in fun_skill
+assert "Replay pass" in fun_skill
+assert "universal human taste" in fun_skill
+assert "TODO" not in fun_skill
+for dimension in (
+    "Discoverability",
+    "Control feel and feedback",
+    "Decision quality",
+    "Momentum and tension",
+    "Learning and mastery",
+    "Variety and surprise",
+    "Replay pull",
+):
+    assert dimension in fun_rubric, dimension
+assert 'value: "swansong-playtester"' in fun_agent
 for required in (
     "Dual-cluster gestures",
     "Audio-led play",
@@ -82,6 +116,6 @@ for required in (
     "Clean-room boundary",
 ):
     assert required in patterns, required
-print("PASS SwanSong playtester packages clean-room homebrew patterns")
+print("PASS SwanSong playtester packages clean-room patterns and the fun tester")
 PY
 python3 "$PLUGIN_DIR/tests/test_live_mcp.py"

@@ -1,0 +1,9 @@
+interface:
+  display_name: "SwanSong Fun Tester"
+  short_description: "Play games and assess engagement signals"
+  default_prompt: "Use $playtest-swansong-fun to play all ten games and compare their fun, friction, and replay pull."
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "swansong-playtester"
+      description: "SwanSong deterministic WonderSwan ROM playtesting"
